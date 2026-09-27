@@ -1,0 +1,1324 @@
+from pathlib import Path
+import textwrap, zipfile
+
+root = Path("/mnt/data/rp_anti_corruption_club")
+root.mkdir(parents=True, exist_ok=True)
+
+index_html = r'''<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#07111f">
+  <meta name="description" content="RP Anti-Corruption Club — integrity, transparency, accountability and secure community reporting.">
+  <title>RP Anti-Corruption Club</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: "#07111f",
+            panel: "#0d1b2a",
+            line: "#20344a",
+            accent: "#20c997",
+            gold: "#f4c95d"
+          },
+          boxShadow: {
+            glow: "0 0 40px rgba(32,201,151,.12)"
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin:0; font-family:Inter,system-ui,sans-serif; background:#07111f; color:#e8f0f7; }
+    .glass { background:rgba(13,27,42,.78); backdrop-filter:blur(14px); border:1px solid rgba(100,130,160,.18); }
+    .gradient-text { background:linear-gradient(90deg,#20c997,#f4c95d); -webkit-background-clip:text; color:transparent; }
+    .hidden-page { display:none!important; }
+    .modal-bg { background:rgba(1,7,15,.82); backdrop-filter:blur(10px); }
+    input,textarea,select { outline:none; }
+    input:focus,textarea:focus,select:focus { border-color:#20c997!important; box-shadow:0 0 0 3px rgba(32,201,151,.1); }
+    .toast { animation:toast .2s ease-out; }
+    @keyframes toast { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+    .no-select { user-select:none; -webkit-user-select:none; }
+    video,img { max-width:100%; }
+    ::-webkit-scrollbar { width:8px; }
+    ::-webkit-scrollbar-thumb { background:#27425d; border-radius:20px; }
+  </style>
+</head>
+
+<body>
+<header class="sticky top-0 z-40 glass">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+    <button onclick="showPage('home')" class="flex items-center gap-3 min-w-0">
+      <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-accent to-gold grid place-items-center text-ink font-black">RP</div>
+      <div class="text-left min-w-0">
+        <div class="font-extrabold tracking-tight truncate">RP Anti-Corruption Club</div>
+        <div class="text-[10px] uppercase tracking-[.22em] text-slate-400">Integrity • Transparency • Accountability</div>
+      </div>
+    </button>
+
+    <nav id="nav" class="hidden lg:flex items-center gap-1 text-sm">
+      <button data-page="home" class="nav-btn px-3 py-2 rounded-xl hover:bg-white/5">Home</button>
+      <button data-page="feed" class="nav-btn px-3 py-2 rounded-xl hover:bg-white/5">Public Feed</button>
+      <button data-page="report" class="nav-btn px-3 py-2 rounded-xl hover:bg-white/5">Secure Report</button>
+      <button data-page="messages" class="nav-btn px-3 py-2 rounded-xl hover:bg-white/5">My Messages</button>
+      <button data-page="profile" class="nav-btn px-3 py-2 rounded-xl hover:bg-white/5">My Profile</button>
+      <button data-page="admin" id="adminNav" class="nav-btn px-3 py-2 rounded-xl hover:bg-white/5 hidden">Admin</button>
+    </nav>
+
+    <div class="flex items-center gap-2">
+      <select id="language" class="hidden sm:block bg-transparent border border-line rounded-xl px-2 py-2 text-xs">
+        <option>English</option><option>Kinyarwanda</option><option>Français</option>
+      </select>
+      <button id="authButton" onclick="openAuth()" class="px-4 py-2 rounded-xl bg-accent text-ink font-bold text-sm">Sign In</button>
+      <button id="menuBtn" class="lg:hidden px-3 py-2 rounded-xl border border-line" onclick="toggleMobileNav()">☰</button>
+    </div>
+  </div>
+  <div id="mobileNav" class="hidden lg:hidden px-4 pb-4">
+    <div class="grid grid-cols-2 gap-2 text-sm">
+      <button onclick="showPage('home');toggleMobileNav()">Home</button>
+      <button onclick="showPage('feed');toggleMobileNav()">Public Feed</button>
+      <button onclick="showPage('report');toggleMobileNav()">Secure Report</button>
+      <button onclick="showPage('messages');toggleMobileNav()">My Messages</button>
+      <button onclick="showPage('profile');toggleMobileNav()">My Profile</button>
+      <button id="mobileAdminNav" class="hidden" onclick="showPage('admin');toggleMobileNav()">Admin</button>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4">
+  <!-- HOME -->
+  <section id="page-home" class="page py-10 lg:py-16">
+    <div class="grid lg:grid-cols-2 gap-8 items-center">
+      <div>
+        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-bold border border-accent/20">● SECURE CIVIC COMMUNITY</span>
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight mt-5">
+          Building a culture of <span class="gradient-text">integrity.</span>
+        </h1>
+        <p class="text-slate-300 text-lg mt-5 max-w-2xl">
+          A secure digital platform for learning, public awareness, community engagement and confidential reporting of suspected corruption or injustice.
+        </p>
+        <div class="flex flex-wrap gap-3 mt-7">
+          <button onclick="showPage('report')" class="px-5 py-3 rounded-2xl bg-accent text-ink font-extrabold">Make a Secure Report</button>
+          <button onclick="showPage('feed')" class="px-5 py-3 rounded-2xl border border-line hover:bg-white/5 font-bold">Explore Public Feed</button>
+        </div>
+        <div class="grid grid-cols-3 gap-3 mt-9">
+          <div class="glass rounded-2xl p-4"><div id="statMembers" class="text-2xl font-black">—</div><div class="text-xs text-slate-400">Members</div></div>
+          <div class="glass rounded-2xl p-4"><div id="statPosts" class="text-2xl font-black">—</div><div class="text-xs text-slate-400">Public Posts</div></div>
+          <div class="glass rounded-2xl p-4"><div id="statEvents" class="text-2xl font-black">—</div><div class="text-xs text-slate-400">Activities</div></div>
+        </div>
+      </div>
+
+      <div class="glass rounded-[2rem] p-6 shadow-glow">
+        <div class="flex items-center justify-between">
+          <div><div class="text-xs uppercase tracking-widest text-slate-400">How it works</div><div class="text-2xl font-extrabold mt-1">Private by design</div></div>
+          <div class="w-12 h-12 rounded-2xl bg-gold/10 grid place-items-center text-2xl">🛡️</div>
+        </div>
+        <div class="space-y-4 mt-6">
+          <div class="flex gap-4"><div class="w-9 h-9 rounded-xl bg-white/5 grid place-items-center">1</div><div><b>Create an account</b><p class="text-sm text-slate-400 mt-1">Use your official registration number and a strong password.</p></div></div>
+          <div class="flex gap-4"><div class="w-9 h-9 rounded-xl bg-white/5 grid place-items-center">2</div><div><b>Submit confidential information</b><p class="text-sm text-slate-400 mt-1">Text, voice, video, images or documents can be attached to a report.</p></div></div>
+          <div class="flex gap-4"><div class="w-9 h-9 rounded-xl bg-white/5 grid place-items-center">3</div><div><b>Communicate with authorized staff</b><p class="text-sm text-slate-400 mt-1">Only authorized administrators can access your case conversation.</p></div></div>
+          <div class="flex gap-4"><div class="w-9 h-9 rounded-xl bg-white/5 grid place-items-center">4</div><div><b>Learn and engage publicly</b><p class="text-sm text-slate-400 mt-1">Public posts use anonymous bot identities instead of member profiles.</p></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-5 mt-12">
+      <div class="glass rounded-3xl p-6"><div class="text-3xl">🔐</div><h3 class="font-extrabold text-xl mt-4">Confidential Reporting</h3><p class="text-slate-400 mt-2">Reports and private case conversations are protected by database access policies.</p></div>
+      <div class="glass rounded-3xl p-6"><div class="text-3xl">🤖</div><h3 class="font-extrabold text-xl mt-4">Anonymous Public Identity</h3><p class="text-slate-400 mt-2">Public community content does not expose a member's profile or registration number.</p></div>
+      <div class="glass rounded-3xl p-6"><div class="text-3xl">🌍</div><h3 class="font-extrabold text-xl mt-4">Built for Everyone</h3><p class="text-slate-400 mt-2">Responsive interface for phones, tablets, laptops and desktop computers.</p></div>
+    </div>
+  </section>
+
+  <!-- FEED -->
+  <section id="page-feed" class="page hidden-page py-10">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <div><div class="text-accent text-xs uppercase tracking-widest font-bold">Community</div><h2 class="text-3xl font-black">Public Feed</h2><p class="text-slate-400 mt-1">Community posts are displayed without public member profiles.</p></div>
+      <button onclick="requireLogin(()=>openPostModal())" class="px-4 py-3 rounded-xl bg-accent text-ink font-bold">+ Create Post</button>
+    </div>
+    <div id="feedList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-5 mt-7"></div>
+  </section>
+
+  <!-- REPORT -->
+  <section id="page-report" class="page hidden-page py-10">
+    <div class="max-w-4xl mx-auto">
+      <div class="glass rounded-3xl p-6 md:p-8">
+        <div class="flex items-start justify-between gap-4">
+          <div><div class="text-accent text-xs uppercase tracking-widest font-bold">Confidential channel</div><h2 class="text-3xl font-black">Secure Report</h2><p class="text-slate-400 mt-2">Only authorized administrators can access the report and its private conversation.</p></div>
+          <div class="text-3xl">🛡️</div>
+        </div>
+
+        <form id="reportForm" class="mt-7 space-y-5">
+          <div>
+            <label class="text-sm font-semibold">Subject</label>
+            <input id="reportSubject" required maxlength="160" class="mt-2 w-full bg-black/20 border border-line rounded-xl px-4 py-3" placeholder="Brief subject of the report">
+          </div>
+          <div>
+            <label class="text-sm font-semibold">What happened?</label>
+            <textarea id="reportBody" required maxlength="10000" rows="8" class="mt-2 w-full bg-black/20 border border-line rounded-xl px-4 py-3" placeholder="Describe the suspected corruption, injustice or concern."></textarea>
+          </div>
+
+          <div class="grid sm:grid-cols-3 gap-3">
+            <button type="button" onclick="startRecorder('audio')" class="border border-line rounded-xl p-4 hover:bg-white/5 text-left"><b>🎤 Voice Note</b><span class="block text-xs text-slate-400 mt-1">Record audio</span></button>
+            <button type="button" onclick="startRecorder('video')" class="border border-line rounded-xl p-4 hover:bg-white/5 text-left"><b>🎥 Video Note</b><span class="block text-xs text-slate-400 mt-1">Record video</span></button>
+            <label class="border border-line rounded-xl p-4 hover:bg-white/5 cursor-pointer"><b>📎 Upload File</b><span class="block text-xs text-slate-400 mt-1">From your device</span><input id="reportFile" type="file" class="hidden" multiple accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt"></label>
+          </div>
+          <div id="attachmentPreview" class="text-sm text-slate-400"></div>
+          <button class="w-full sm:w-auto px-6 py-3 rounded-xl bg-accent text-ink font-extrabold">Submit Confidential Report</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- MESSAGES -->
+  <section id="page-messages" class="page hidden-page py-10">
+    <div class="max-w-5xl mx-auto">
+      <div class="glass rounded-3xl p-6">
+        <div class="flex items-center justify-between"><div><div class="text-accent text-xs uppercase tracking-widest font-bold">Private communication</div><h2 class="text-3xl font-black">My Case Messages</h2></div><button onclick="loadMyReports()" class="border border-line rounded-xl px-3 py-2 text-sm">Refresh</button></div>
+        <div id="myReports" class="mt-6 space-y-3"></div>
+        <div id="conversation" class="hidden mt-6 border-t border-line pt-6">
+          <div class="flex items-center justify-between"><div><b id="conversationTitle">Case</b><div id="conversationStatus" class="text-xs text-slate-400"></div></div><button onclick="closeConversation()" class="text-slate-400">Close</button></div>
+          <div id="messageList" class="mt-4 space-y-3 max-h-[50vh] overflow-y-auto pr-2"></div>
+          <form id="messageForm" class="mt-4 flex gap-2">
+            <input id="messageText" maxlength="5000" required class="flex-1 bg-black/20 border border-line rounded-xl px-4 py-3" placeholder="Write a private message...">
+            <label class="px-4 py-3 border border-line rounded-xl cursor-pointer">📎<input id="messageFile" type="file" class="hidden"></label>
+            <button class="px-5 py-3 rounded-xl bg-accent text-ink font-bold">Send</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROFILE -->
+  <section id="page-profile" class="page hidden-page py-10">
+    <div class="max-w-3xl mx-auto">
+      <div class="glass rounded-3xl p-7">
+        <div class="text-accent text-xs uppercase tracking-widest font-bold">Private account</div>
+        <h2 class="text-3xl font-black mt-1">My Profile</h2>
+        <p class="text-slate-400 mt-2">Only you can see this account information.</p>
+        <div id="profileBox" class="mt-7"></div>
+        <button onclick="signOut()" class="mt-7 px-5 py-3 rounded-xl border border-red-500/30 text-red-300">Sign Out</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ADMIN -->
+  <section id="page-admin" class="page hidden-page py-10">
+    <div class="grid xl:grid-cols-[300px_1fr] gap-5">
+      <aside class="glass rounded-3xl p-5 h-fit">
+        <div class="text-accent text-xs uppercase tracking-widest font-bold">Authorized area</div>
+        <h2 class="text-2xl font-black">Admin Center</h2>
+        <div class="space-y-2 mt-5">
+          <button onclick="adminTab('reports')" class="admin-tab w-full text-left px-4 py-3 rounded-xl bg-white/5">Private Reports</button>
+          <button onclick="adminTab('posts')" class="admin-tab w-full text-left px-4 py-3 rounded-xl hover:bg-white/5">Public Posts</button>
+          <button onclick="adminTab('users')" class="admin-tab w-full text-left px-4 py-3 rounded-xl hover:bg-white/5">Users</button>
+          <button onclick="adminTab('audit')" class="admin-tab w-full text-left px-4 py-3 rounded-xl hover:bg-white/5">Audit Log</button>
+        </div>
+      </aside>
+      <div id="adminContent" class="glass rounded-3xl p-6 min-h-[500px]"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="border-t border-line mt-16">
+  <div class="max-w-7xl mx-auto px-4 py-8 grid md:grid-cols-3 gap-6">
+    <div><b>RP Anti-Corruption Club</b><p class="text-sm text-slate-400 mt-2">Promoting integrity, transparency and accountability.</p></div>
+    <div><b>Important</b><p class="text-sm text-slate-400 mt-2">This platform is not a substitute for emergency services or competent legal/enforcement authorities.</p></div>
+    <div><b>Security</b><p class="text-sm text-slate-400 mt-2">Use a private device and do not submit unnecessary sensitive information.</p></div>
+  </div>
+</footer>
+
+<!-- AUTH MODAL -->
+<div id="authModal" class="hidden fixed inset-0 z-50 modal-bg p-4 grid place-items-center">
+  <div class="glass rounded-3xl p-6 w-full max-w-md relative">
+    <button onclick="closeModal('authModal')" class="absolute right-5 top-5 text-slate-400">✕</button>
+    <div id="authTabs" class="grid grid-cols-2 bg-black/20 rounded-xl p-1">
+      <button onclick="setAuthMode('signin')" id="tabSignin" class="py-2 rounded-lg bg-white/10 font-bold">Sign In</button>
+      <button onclick="setAuthMode('signup')" id="tabSignup" class="py-2 rounded-lg font-bold">Sign Up</button>
+    </div>
+
+    <form id="authForm" class="mt-6 space-y-4">
+      <div id="fullNameWrap" class="hidden"><label class="text-sm font-semibold">Full Name</label><input id="fullName" class="mt-2 w-full bg-black/20 border border-line rounded-xl px-4 py-3"></div>
+      <div><label class="text-sm font-semibold">Registration Number</label><input id="regNumber" required autocomplete="username" class="mt-2 w-full bg-black/20 border border-line rounded-xl px-4 py-3" placeholder="e.g. RP2026XXXX"></div>
+      <div><label class="text-sm font-semibold">Password</label><input id="password" type="password" required minlength="8" autocomplete="current-password" class="mt-2 w-full bg-black/20 border border-line rounded-xl px-4 py-3"></div>
+      <div id="retypeWrap" class="hidden"><label class="text-sm font-semibold">Retype Password</label><input id="retypePassword" type="password" minlength="8" class="mt-2 w-full bg-black/20 border border-line rounded-xl px-4 py-3"></div>
+      <button id="authSubmit" class="w-full py-3 rounded-xl bg-accent text-ink font-extrabold">Sign In</button>
+    </form>
+
+    <button id="forgotBtn" onclick="openForgot()" class="w-full text-sm text-accent mt-4">Forgot password?</button>
+    <div id="authMessage" class="text-sm mt-4 text-center"></div>
+  </div>
+</div>
+
+<!-- FORGOT MODAL -->
+<div id="forgotModal" class="hidden fixed inset-0 z-[60] modal-bg p-4 grid place-items-center">
+  <div class="glass rounded-3xl p-6 w-full max-w-md">
+    <div class="flex justify-between"><div><div class="text-accent text-xs uppercase tracking-widest font-bold">Account recovery</div><h3 class="text-2xl font-black">Reset Password</h3></div><button onclick="closeModal('forgotModal')">✕</button></div>
+    <p class="text-sm text-slate-400 mt-3">Enter your registration number. The secure recovery service must verify the account before allowing a password reset.</p>
+    <form id="forgotForm" class="mt-5 space-y-4">
+      <input id="forgotReg" required class="w-full bg-black/20 border border-line rounded-xl px-4 py-3" placeholder="Registration Number">
+      <button class="w-full py-3 rounded-xl bg-accent text-ink font-extrabold">Request Reset</button>
+    </form>
+    <div id="forgotMessage" class="text-sm mt-4"></div>
+  </div>
+</div>
+
+<!-- POST MODAL -->
+<div id="postModal" class="hidden fixed inset-0 z-50 modal-bg p-4 grid place-items-center">
+  <div class="glass rounded-3xl p-6 w-full max-w-xl">
+    <div class="flex justify-between"><h3 class="text-2xl font-black">Create Public Post</h3><button onclick="closeModal('postModal')">✕</button></div>
+    <form id="postForm" class="mt-5 space-y-4">
+      <textarea id="postBody" required maxlength="5000" rows="7" class="w-full bg-black/20 border border-line rounded-xl px-4 py-3" placeholder="Share an awareness message, educational content or community idea..."></textarea>
+      <input id="postFile" type="file" accept="image/*,video/*,.pdf,.doc,.docx">
+      <button class="w-full py-3 rounded-xl bg-accent text-ink font-extrabold">Publish</button>
+    </form>
+  </div>
+</div>
+
+<!-- QR MODAL -->
+<div id="qrModal" class="hidden fixed inset-0 z-50 modal-bg p-4 grid place-items-center">
+  <div class="glass rounded-3xl p-6 w-full max-w-lg">
+    <div class="flex justify-between"><h3 class="text-2xl font-black">Scan QR Code</h3><button onclick="stopQR();closeModal('qrModal')">✕</button></div>
+    <video id="qrVideo" class="w-full rounded-2xl mt-5 bg-black" playsinline></video>
+    <canvas id="qrCanvas" class="hidden"></canvas>
+    <p id="qrStatus" class="text-sm text-slate-400 mt-3">Point your camera at a QR code.</p>
+  </div>
+</div>
+
+<!-- RECORDER MODAL -->
+<div id="recorderModal" class="hidden fixed inset-0 z-50 modal-bg p-4 grid place-items-center">
+  <div class="glass rounded-3xl p-6 w-full max-w-lg">
+    <div class="flex justify-between"><h3 id="recorderTitle" class="text-2xl font-black">Recorder</h3><button onclick="stopRecorder();closeModal('recorderModal')">✕</button></div>
+    <video id="recorderPreview" class="w-full rounded-2xl mt-5 bg-black" autoplay muted playsinline></video>
+    <div class="flex gap-3 mt-5">
+      <button id="recordStart" onclick="beginRecording()" class="flex-1 py-3 rounded-xl bg-accent text-ink font-bold">Start</button>
+      <button id="recordStop" onclick="stopRecorder()" class="flex-1 py-3 rounded-xl border border-line font-bold">Stop</button>
+    </div>
+    <p id="recordStatus" class="text-sm text-slate-400 mt-3"></p>
+  </div>
+</div>
+
+<div id="toastHost" class="fixed right-4 bottom-4 z-[100] space-y-2"></div>
+
+<script>
+/* ============================================================
+   RP ANTI-CORRUPTION CLUB
+   Frontend configuration
+   IMPORTANT: use the Supabase ANON/PUBLISHABLE key only here.
+   NEVER put the service_role key in this file.
+   ============================================================ */
+const SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";
+const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_OR_PUBLISHABLE_KEY";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let currentUser = null;
+let currentProfile = null;
+let authMode = "signin";
+let selectedReportId = null;
+let recorder = null;
+let recorderStream = null;
+let recorderChunks = [];
+let recorderKind = "audio";
+let qrStream = null;
+let qrTimer = null;
+let pendingAttachments = [];
+
+const $ = id => document.getElementById(id);
+const escapeHTML = s => String(s ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+const fmtDate = d => new Date(d).toLocaleString();
+
+function toast(message, type="info") {
+  const el = document.createElement("div");
+  el.className = "toast glass rounded-xl px-4 py-3 text-sm shadow-glow max-w-sm";
+  el.innerHTML = escapeHTML(message);
+  $("toastHost").appendChild(el);
+  setTimeout(()=>el.remove(), 3500);
+}
+
+function closeModal(id){ $(id).classList.add("hidden"); }
+function openModal(id){ $(id).classList.remove("hidden"); }
+function toggleMobileNav(){ $("mobileNav").classList.toggle("hidden"); }
+
+function showPage(name) {
+  document.querySelectorAll(".page").forEach(x=>x.classList.add("hidden-page"));
+  const p = $("page-"+name);
+  if (!p) return;
+  p.classList.remove("hidden-page");
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("bg-white/10", b.dataset.page===name));
+  if (name==="feed") loadFeed();
+  if (name==="profile") loadProfile();
+  if (name==="messages") loadMyReports();
+  if (name==="admin") { if (isAdmin()) adminTab("reports"); else showPage("home"); }
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+document.querySelectorAll(".nav-btn").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.page)));
+
+function isAdmin(){ return currentProfile?.role === "super_admin" || currentProfile?.role === "report_admin" || currentProfile?.role === "content_admin" || currentProfile?.role === "user_admin" || currentProfile?.role === "security_admin"; }
+
+function requireLogin(fn){
+  if (!currentUser){ openAuth(); return; }
+  fn();
+}
+
+function openAuth(){ setAuthMode("signin"); openModal("authModal"); }
+function setAuthMode(mode){
+  authMode=mode;
+  $("fullNameWrap").classList.toggle("hidden",mode!=="signup");
+  $("retypeWrap").classList.toggle("hidden",mode!=="signup");
+  $("forgotBtn").classList.toggle("hidden",mode!=="signin");
+  $("authSubmit").textContent=mode==="signup"?"Create Account":"Sign In";
+  $("tabSignin").classList.toggle("bg-white/10",mode==="signin");
+  $("tabSignup").classList.toggle("bg-white/10",mode==="signup");
+  $("authMessage").textContent="";
+}
+
+function normalizeReg(v){
+  return v.trim().toUpperCase().replace(/\s+/g,"");
+}
+
+/* Supabase Auth normally expects an email/phone.
+   We map a registration number to a non-user-facing synthetic email.
+   This lets the UI use Reg Number + Password without exposing email.
+   Password recovery is handled by the secure Edge Function in this package. */
+function syntheticEmail(reg){
+  const clean = normalizeReg(reg).toLowerCase().replace(/[^a-z0-9._-]/g,"");
+  return `${clean}@rpac.internal`;
+}
+
+$("authForm").addEventListener("submit", async e=>{
+  e.preventDefault();
+  $("authMessage").textContent="Working...";
+  const reg=normalizeReg($("regNumber").value);
+  const password=$("password").value;
+
+  try{
+    if(authMode==="signup"){
+      const fullName=$("fullName").value.trim();
+      const retype=$("retypePassword").value;
+      if(!fullName) throw new Error("Full name is required.");
+      if(password.length<8) throw new Error("Password must be at least 8 characters.");
+      if(password!==retype) throw new Error("Passwords do not match.");
+
+      const {data,error}=await sb.auth.signUp({
+        email:syntheticEmail(reg),
+        password,
+        options:{data:{registration_number:reg,full_name:fullName}}
+      });
+      if(error) throw error;
+      if(!data.user) throw new Error("Account creation did not return a user.");
+      // The profile row is created by a database trigger.
+      $("authMessage").textContent="Account created. You can sign in when the account is active.";
+      setTimeout(()=>{setAuthMode("signin");$("regNumber").value=reg;$("password").value="";},1200);
+    }else{
+      const {data,error}=await sb.auth.signInWithPassword({email:syntheticEmail(reg),password});
+      if(error) throw error;
+      if(!data.user) throw new Error("Sign in failed.");
+      closeModal("authModal");
+      toast("Signed in successfully.","success");
+    }
+  }catch(err){
+    $("authMessage").textContent=err.message || "Authentication failed.";
+  }
+});
+
+function openForgot(){ closeModal("authModal"); openModal("forgotModal"); }
+
+$("forgotForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const reg=normalizeReg($("forgotReg").value);
+  $("forgotMessage").textContent="Checking secure recovery service...";
+  try{
+    const res=await fetch(`${SUPABASE_URL}/functions/v1/request-password-reset`,{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({registration_number:reg})
+    });
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error || "Recovery request failed.");
+    $("forgotMessage").textContent="If the registration number is eligible, recovery instructions have been issued through the configured secure recovery channel.";
+  }catch(err){ $("forgotMessage").textContent=err.message; }
+});
+
+async function loadSession(){
+  const {data}=await sb.auth.getSession();
+  currentUser=data.session?.user || null;
+  if(currentUser) await loadCurrentProfile();
+  updateAuthUI();
+}
+async function loadCurrentProfile(){
+  if(!currentUser) return;
+  const {data,error}=await sb.from("profiles").select("*").eq("id",currentUser.id).single();
+  if(error){ console.error(error); return; }
+  currentProfile=data;
+}
+function updateAuthUI(){
+  $("authButton").textContent=currentUser ? "Account" : "Sign In";
+  const admin = isAdmin();
+  $("adminNav").classList.toggle("hidden",!admin);
+  $("mobileAdminNav").classList.toggle("hidden",!admin);
+}
+async function signOut(){
+  await sb.auth.signOut();
+  currentUser=null; currentProfile=null;
+  updateAuthUI(); showPage("home"); toast("Signed out.");
+}
+sb.auth.onAuthStateChange(async (_event,session)=>{
+  currentUser=session?.user||null;
+  if(currentUser) await loadCurrentProfile(); else currentProfile=null;
+  updateAuthUI();
+});
+
+/* ---------- PUBLIC FEED ---------- */
+async function loadFeed(){
+  const box=$("feedList"); box.innerHTML='<div class="text-slate-400">Loading posts...</div>';
+  const {data,error}=await sb.from("public_posts")
+    .select("id,body,media_url,media_type,created_at,views,likes_count")
+    .eq("status","published")
+    .order("created_at",{ascending:false}).limit(60);
+  if(error){ box.innerHTML='<div class="text-red-300">Unable to load public feed.</div>'; console.error(error); return; }
+  if(!data.length){ box.innerHTML='<div class="text-slate-400">No public posts yet.</div>'; return; }
+  box.innerHTML=data.map(p=>`
+    <article class="glass rounded-3xl overflow-hidden">
+      ${p.media_url ? renderMedia(p.media_url,p.media_type) : ""}
+      <div class="p-5">
+        <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-gradient-to-br from-accent/40 to-gold/40 grid place-items-center">🤖</div><div><b>RP Community Bot</b><div class="text-xs text-slate-500">${fmtDate(p.created_at)}</div></div></div>
+        <p class="text-slate-200 whitespace-pre-wrap mt-4">${escapeHTML(p.body)}</p>
+        <div class="flex items-center gap-5 mt-5 text-sm text-slate-400">
+          <button onclick="likePost('${p.id}')" class="hover:text-accent">♥ <span>${p.likes_count||0}</span></button>
+          <button onclick="registerView('${p.id}')" class="hover:text-accent">◉ ${p.views||0} views</button>
+        </div>
+      </div>
+    </article>`).join("");
+}
+function renderMedia(url,type){
+  if(type?.startsWith("image")) return `<img src="${escapeHTML(url)}" class="w-full max-h-72 object-cover no-select" alt="Community media" draggable="false">`;
+  if(type?.startsWith("video")) return `<video src="${escapeHTML(url)}" controls controlsList="nodownload" class="w-full max-h-80 bg-black no-select"></video>`;
+  if(type?.startsWith("audio")) return `<audio src="${escapeHTML(url)}" controls controlsList="nodownload" class="w-full mt-3"></audio>`;
+  return `<div class="p-5 text-slate-400">Attachment available</div>`;
+}
+async function likePost(id){
+  requireLogin(async()=>{
+    const {error}=await sb.rpc("like_public_post",{post_id:id});
+    if(error) toast("Like could not be added."); else loadFeed();
+  });
+}
+async function registerView(id){ await sb.rpc("register_public_view",{post_id:id}); }
+
+/* ---------- POSTS ---------- */
+async function openPostModal(){ $("postBody").value=""; $("postFile").value=""; openModal("postModal"); }
+$("postForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  if(!currentUser) return;
+  try{
+    const body=$("postBody").value.trim();
+    if(!body) throw new Error("Post text is required.");
+    let media_url=null,media_type=null;
+    const file=$("postFile").files[0];
+    if(file){
+      const safe=validateFile(file,25);
+      if(!safe.ok) throw new Error(safe.message);
+      const path=`${currentUser.id}/${crypto.randomUUID()}-${safe.name}`;
+      const {error:up}=await sb.storage.from("public-media").upload(path,file,{contentType:file.type||"application/octet-stream",upsert:false});
+      if(up) throw up;
+      const {data:pub}=sb.storage.from("public-media").getPublicUrl(path);
+      media_url=pub.publicUrl; media_type=file.type;
+    }
+    const {error}=await sb.from("public_posts").insert({body,media_url,media_type});
+    if(error) throw error;
+    closeModal("postModal"); toast("Post published."); loadFeed();
+  }catch(err){ toast(err.message||"Could not publish post."); }
+});
+
+/* ---------- REPORTS ---------- */
+$("reportFile").addEventListener("change",e=>{
+  const files=[...e.target.files];
+  pendingAttachments=files;
+  $("attachmentPreview").textContent=files.length ? files.map(f=>`${f.name} (${Math.round(f.size/1024)} KB)`).join(" • ") : "";
+});
+$("reportForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  if(!currentUser){openAuth();return;}
+  try{
+    const subject=$("reportSubject").value.trim(), body=$("reportBody").value.trim();
+    if(!subject||!body) throw new Error("Subject and description are required.");
+    const {data:report,error}=await sb.from("reports").insert({subject,initial_body:body}).select("id,case_code").single();
+    if(error) throw error;
+    for(const f of pendingAttachments){
+      const safe=validateFile(f,50); if(!safe.ok) throw new Error(safe.message);
+      await uploadPrivateAttachment("report",report.id,f);
+    }
+    pendingAttachments=[];
+    $("reportForm").reset(); $("attachmentPreview").textContent="";
+    toast(`Report submitted. Case ID: ${report.case_code}`); showPage("messages");
+  }catch(err){ toast(err.message||"Report submission failed."); }
+});
+
+/* ---------- PRIVATE CASE CHAT ---------- */
+async function loadMyReports(){
+  if(!currentUser){ $("myReports").innerHTML='<div class="text-slate-400">Sign in to view your private cases.</div>'; return; }
+  const {data,error}=await sb.from("reports").select("id,case_code,subject,status,created_at,updated_at").order("created_at",{ascending:false});
+  if(error){ $("myReports").innerHTML='<div class="text-red-300">Could not load cases.</div>'; return; }
+  $("myReports").innerHTML=data.length?data.map(r=>`
+    <button onclick="openConversation('${r.id}')" class="w-full text-left glass rounded-2xl p-4 hover:bg-white/5">
+      <div class="flex justify-between gap-4"><b>${escapeHTML(r.case_code)}</b><span class="text-xs px-2 py-1 rounded-lg bg-white/5">${escapeHTML(r.status)}</span></div>
+      <div class="font-semibold mt-2">${escapeHTML(r.subject)}</div>
+      <div class="text-xs text-slate-500 mt-1">${fmtDate(r.updated_at||r.created_at)}</div>
+    </button>`).join(""):'<div class="text-slate-400">No cases yet.</div>';
+}
+async function openConversation(id){
+  selectedReportId=id;
+  const {data:report}=await sb.from("reports").select("case_code,subject,status").eq("id",id).single();
+  if(!report) return;
+  $("conversationTitle").textContent=`${report.case_code} — ${report.subject}`;
+  $("conversationStatus").textContent=`Status: ${report.status}`;
+  $("conversation").classList.remove("hidden");
+  await loadMessages();
+}
+function closeConversation(){ selectedReportId=null; $("conversation").classList.add("hidden"); }
+async function loadMessages(){
+  if(!selectedReportId) return;
+  const {data,error}=await sb.from("report_messages").select("id,sender_role,body,created_at").eq("report_id",selectedReportId).order("created_at",{ascending:true});
+  if(error){toast("Could not load messages.");return;}
+  $("messageList").innerHTML=(data||[]).map(m=>`
+    <div class="${m.sender_role==='user'?'text-right':''}">
+      <div class="inline-block max-w-[85%] rounded-2xl px-4 py-3 ${m.sender_role==='user'?'bg-accent/15':'bg-white/5'}">
+        <div class="text-xs text-slate-500 mb-1">${m.sender_role==='user'?'You':'Authorized Admin'}</div>
+        <div class="whitespace-pre-wrap">${escapeHTML(m.body||"Attachment")}</div>
+        <div class="text-[10px] text-slate-500 mt-2">${fmtDate(m.created_at)}</div>
+      </div>
+    </div>`).join("");
+  $("messageList").scrollTop=$("messageList").scrollHeight;
+}
+$("messageForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  if(!selectedReportId) return;
+  const body=$("messageText").value.trim();
+  const file=$("messageFile").files[0];
+  if(!body && !file) return;
+  try{
+    if(body){
+      const {error}=await sb.from("report_messages").insert({report_id:selectedReportId,body,sender_role:"user"});
+      if(error) throw error;
+    }
+    if(file){
+      const safe=validateFile(file,50); if(!safe.ok) throw new Error(safe.message);
+      await uploadPrivateAttachment("message",selectedReportId,file);
+    }
+    $("messageText").value=""; $("messageFile").value="";
+    await loadMessages();
+  }catch(err){toast(err.message||"Message failed.");}
+});
+
+/* ---------- FILES ---------- */
+function validateFile(file,maxMB){
+  const allowed=[
+    "image/jpeg","image/png","image/webp","image/gif",
+    "audio/webm","audio/ogg","audio/mpeg","audio/wav",
+    "video/webm","video/mp4","application/pdf",
+    "text/plain","application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  ];
+  if(file.size>maxMB*1024*1024) return {ok:false,message:`File is larger than ${maxMB} MB.`};
+  if(!allowed.includes(file.type)) return {ok:false,message:"This file type is not allowed."};
+  return {ok:true,name:file.name.replace(/[^a-zA-Z0-9._-]/g,"_")};
+}
+async function uploadPrivateAttachment(kind,parentId,file){
+  const safe=validateFile(file,50); if(!safe.ok) throw new Error(safe.message);
+  const path=`${currentUser.id}/${kind}/${parentId}/${crypto.randomUUID()}-${safe.name}`;
+  const {error}=await sb.storage.from("private-files").upload(path,file,{contentType:file.type||"application/octet-stream",upsert:false});
+  if(error) throw error;
+  const {error:dbError}=await sb.from("private_attachments").insert({report_id:kind==="report"?parentId:selectedReportId,storage_path:path,file_name:file.name,mime_type:file.type,file_size:file.size});
+  if(dbError) throw dbError;
+}
+
+/* ---------- RECORDER ---------- */
+async function startRecorder(kind){
+  if(!currentUser){openAuth();return;}
+  recorderKind=kind; recorderChunks=[];
+  openModal("recorderModal");
+  $("recorderTitle").textContent=kind==="video"?"Video Note Recorder":"Voice Note Recorder";
+  $("recordStatus").textContent="Requesting device permission...";
+  try{
+    recorderStream=await navigator.mediaDevices.getUserMedia(kind==="video"?{audio:true,video:true}:{audio:true});
+    $("recorderPreview").srcObject=recorderStream;
+    $("recorderPreview").muted=kind!=="video";
+    $("recorderPreview").style.display=kind==="video"?"block":"none";
+    $("recordStatus").textContent="Permission granted. Press Start.";
+  }catch(err){ $("recordStatus").textContent="Microphone/camera permission was denied or unavailable."; }
+}
+function beginRecording(){
+  if(!recorderStream)return;
+  recorderChunks=[];
+  recorder=new MediaRecorder(recorderStream);
+  recorder.ondataavailable=e=>{if(e.data.size)recorderChunks.push(e.data)};
+  recorder.onstop=async()=>{
+    const blob=new Blob(recorderChunks,{type:recorder.mimeType|| (recorderKind==="video"?"video/webm":"audio/webm")});
+    const file=new File([blob],`${recorderKind}-note-${Date.now()}.webm`,{type:blob.type});
+    pendingAttachments.push(file);
+    $("attachmentPreview").textContent=`${file.name} (${Math.round(file.size/1024)} KB)`;
+    $("recordStatus").textContent="Recording saved to this report. Submit the report to upload it.";
+  };
+  recorder.start();
+  $("recordStatus").textContent="Recording...";
+}
+function stopRecorder(){
+  if(recorder && recorder.state!=="inactive") recorder.stop();
+  if(recorderStream){recorderStream.getTracks().forEach(t=>t.stop());recorderStream=null;}
+}
+
+/* ---------- QR SCANNER ---------- */
+async function openQR(){
+  openModal("qrModal");
+  try{
+    qrStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false});
+    $("qrVideo").srcObject=qrStream; await $("qrVideo").play();
+    $("qrStatus").textContent="Scanning...";
+    qrTimer=setInterval(scanQR,250);
+  }catch(e){$("qrStatus").textContent="Camera access is unavailable."; }
+}
+function scanQR(){
+  const v=$("qrVideo"),c=$("qrCanvas");
+  if(!v.videoWidth)return;
+  c.width=v.videoWidth;c.height=v.videoHeight;
+  const ctx=c.getContext("2d");ctx.drawImage(v,0,0,c.width,c.height);
+  const img=ctx.getImageData(0,0,c.width,c.height);
+  const code=window.jsQR(img.data,img.width,img.height,{inversionAttempts:"dontInvert"});
+  if(code){
+    $("qrStatus").textContent="QR detected.";
+    stopQR();
+    try{
+      const u=new URL(code.data);
+      if(u.protocol!=="https:"){toast("Only secure HTTPS QR destinations are allowed.");return;}
+      window.location.href=u.href;
+    }catch{toast("QR detected, but it is not a valid secure web address.");}
+  }
+}
+function stopQR(){
+  if(qrTimer)clearInterval(qrTimer);qrTimer=null;
+  if(qrStream){qrStream.getTracks().forEach(t=>t.stop());qrStream=null;}
+}
+
+/* ---------- PROFILE ---------- */
+async function loadProfile(){
+  const b=$("profileBox");
+  if(!currentUser){b.innerHTML='<p class="text-slate-400">Sign in to view your private profile.</p>';return;}
+  const {data,error}=await sb.from("profiles").select("full_name,registration_number,role,created_at").eq("id",currentUser.id).single();
+  if(error){b.textContent="Profile unavailable.";return;}
+  b.innerHTML=`
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div class="bg-black/20 rounded-2xl p-5"><div class="text-xs text-slate-500">Full Name</div><div class="font-bold mt-1">${escapeHTML(data.full_name)}</div></div>
+      <div class="bg-black/20 rounded-2xl p-5"><div class="text-xs text-slate-500">Registration Number</div><div class="font-bold mt-1">${escapeHTML(data.registration_number)}</div></div>
+      <div class="bg-black/20 rounded-2xl p-5"><div class="text-xs text-slate-500">Account Role</div><div class="font-bold mt-1">${escapeHTML(data.role)}</div></div>
+      <div class="bg-black/20 rounded-2xl p-5"><div class="text-xs text-slate-500">Joined</div><div class="font-bold mt-1">${fmtDate(data.created_at)}</div></div>
+    </div>`;
+}
+
+/* ---------- ADMIN ---------- */
+function adminTab(tab){
+  if(!isAdmin()){toast("Unauthorized.");return;}
+  const c=$("adminContent");
+  if(tab==="reports") loadAdminReports();
+  if(tab==="posts") loadAdminPosts();
+  if(tab==="users") loadAdminUsers();
+  if(tab==="audit") loadAudit();
+}
+async function loadAdminReports(){
+  const {data,error}=await sb.from("admin_reports_view").select("*").order("created_at",{ascending:false});
+  $("adminContent").innerHTML=`<div class="flex justify-between items-center"><h3 class="text-2xl font-black">Private Reports</h3><span class="text-xs text-slate-500">Authorized staff only</span></div>`+
+    (error?`<p class="text-red-300 mt-5">${escapeHTML(error.message)}</p>`:
+    `<div class="space-y-3 mt-5">${data.map(r=>`
+      <div class="bg-black/20 rounded-2xl p-4">
+        <div class="flex justify-between gap-3"><b>${escapeHTML(r.case_code)}</b><span class="text-xs">${escapeHTML(r.status)}</span></div>
+        <div class="font-semibold mt-2">${escapeHTML(r.subject)}</div>
+        <div class="text-xs text-slate-500 mt-1">Created ${fmtDate(r.created_at)}</div>
+        <div class="flex flex-wrap gap-2 mt-4">
+          <button onclick="adminOpenCase('${r.id}')" class="px-3 py-2 rounded-xl bg-accent text-ink text-sm font-bold">Open Case</button>
+          <select onchange="adminSetStatus('${r.id}',this.value)" class="bg-black/20 border border-line rounded-xl px-3 py-2 text-sm">
+            ${["submitted","under_review","in_progress","resolved","closed"].map(s=>`<option ${s===r.status?"selected":""}>${s}</option>`).join("")}
+          </select>
+        </div>
+      </div>`).join("")}</div>`);
+}
+async function adminOpenCase(id){
+  const {data:r}=await sb.from("reports").select("id,case_code,subject,status").eq("id",id).single();
+  if(!r)return;
+  const {data:m}=await sb.from("report_messages").select("id,sender_role,body,created_at").eq("report_id",id).order("created_at");
+  $("adminContent").innerHTML=`
+    <button onclick="loadAdminReports()" class="text-accent text-sm">← Back</button>
+    <h3 class="text-2xl font-black mt-3">${escapeHTML(r.case_code)}</h3>
+    <p class="text-slate-400">${escapeHTML(r.subject)} • ${escapeHTML(r.status)}</p>
+    <div class="mt-5 space-y-3 max-h-[45vh] overflow-y-auto">${(m||[]).map(x=>`<div class="bg-black/20 rounded-2xl p-4"><div class="text-xs text-slate-500">${x.sender_role==="user"?"User":"Admin"} • ${fmtDate(x.created_at)}</div><div class="whitespace-pre-wrap mt-2">${escapeHTML(x.body||"")}</div></div>`).join("")}</div>
+    <form onsubmit="adminReply(event,'${id}')" class="mt-5 flex gap-2"><input id="adminReplyText" required maxlength="5000" class="flex-1 bg-black/20 border border-line rounded-xl px-4 py-3" placeholder="Reply privately to this user..."><button class="px-5 py-3 rounded-xl bg-accent text-ink font-bold">Reply</button></form>`;
+}
+async function adminReply(e,id){
+  e.preventDefault();
+  const body=$("adminReplyText").value.trim(); if(!body)return;
+  const {error}=await sb.from("report_messages").insert({report_id:id,body,sender_role:"admin"});
+  if(error){toast(error.message);return;}
+  await sb.from("reports").update({updated_at:new Date().toISOString()}).eq("id",id);
+  await adminOpenCase(id); toast("Private reply sent.");
+}
+async function adminSetStatus(id,status){
+  const {error}=await sb.from("reports").update({status,updated_at:new Date().toISOString()}).eq("id",id);
+  if(error)toast(error.message); else {toast("Status updated.");loadAdminReports();}
+}
+async function loadAdminPosts(){
+  const {data,error}=await sb.from("public_posts").select("id,body,status,created_at,views,likes_count").order("created_at",{ascending:false}).limit(100);
+  $("adminContent").innerHTML=`<h3 class="text-2xl font-black">Public Posts</h3>`+(error?`<p class="text-red-300 mt-5">${escapeHTML(error.message)}</p>`:
+    `<div class="space-y-3 mt-5">${data.map(p=>`<div class="bg-black/20 rounded-2xl p-4"><div class="flex justify-between"><span>${escapeHTML(p.status)}</span><span class="text-xs text-slate-500">${p.views||0} views • ${p.likes_count||0} likes</span></div><p class="mt-2 whitespace-pre-wrap">${escapeHTML(p.body)}</p><button onclick="adminDeletePost('${p.id}')" class="mt-3 text-sm text-red-300">Delete</button></div>`).join("")}</div>`);
+}
+async function adminDeletePost(id){
+  if(!confirm("Delete this public post?"))return;
+  const {error}=await sb.from("public_posts").update({status:"deleted"}).eq("id",id);
+  if(error)toast(error.message);else{toast("Post deleted.");loadAdminPosts();}
+}
+async function loadAdminUsers(){
+  const {data,error}=await sb.from("profiles").select("id,full_name,registration_number,role,created_at").order("created_at",{ascending:false}).limit(200);
+  $("adminContent").innerHTML=`<h3 class="text-2xl font-black">Users</h3>`+(error?`<p class="text-red-300 mt-5">${escapeHTML(error.message)}</p>`:
+    `<div class="overflow-auto mt-5"><table class="w-full text-sm"><thead><tr class="text-left text-slate-500"><th class="p-3">Name</th><th class="p-3">Reg</th><th class="p-3">Role</th><th class="p-3">Joined</th></tr></thead><tbody>${data.map(u=>`<tr class="border-t border-line"><td class="p-3">${escapeHTML(u.full_name)}</td><td class="p-3">${escapeHTML(u.registration_number)}</td><td class="p-3">${escapeHTML(u.role)}</td><td class="p-3">${fmtDate(u.created_at)}</td></tr>`).join("")}</tbody></table></div>`);
+}
+async function loadAudit(){
+  const {data,error}=await sb.from("audit_logs").select("id,actor_role,action,created_at").order("created_at",{ascending:false}).limit(200);
+  $("adminContent").innerHTML=`<h3 class="text-2xl font-black">Audit Log</h3>`+(error?`<p class="text-red-300 mt-5">${escapeHTML(error.message)}</p>`:
+    `<div class="space-y-2 mt-5">${data.map(x=>`<div class="bg-black/20 rounded-xl p-3 text-sm"><b>${escapeHTML(x.action)}</b> <span class="text-slate-500">• ${escapeHTML(x.actor_role)} • ${fmtDate(x.created_at)}</span></div>`).join("")}</div>`);
+}
+
+/* ---------- BASIC UI SECURITY UX ---------- */
+document.addEventListener("contextmenu",e=>e.preventDefault());
+document.addEventListener("dragstart",e=>e.preventDefault());
+document.addEventListener("keydown",e=>{
+  if((e.ctrlKey||e.metaKey)&&["s","u","p"].includes(e.key.toLowerCase())) e.preventDefault();
+  if(e.key==="PrintScreen") toast("Screen capture controls are handled by your device/operating system; the website cannot guarantee blocking screenshots.");
+});
+document.addEventListener("visibilitychange",()=>{
+  // Do not claim this prevents screenshots/recording. It only hides sensitive UI while the tab is hidden.
+  document.body.style.filter=document.hidden?"blur(8px)":"none";
+});
+
+async function initStats(){
+  const [m,p,e]=await Promise.all([
+    sb.from("profiles").select("id",{count:"exact",head:true}),
+    sb.from("public_posts").select("id",{count:"exact",head:true}).eq("status","published"),
+    sb.from("club_events").select("id",{count:"exact",head:true})
+  ]);
+  $("statMembers").textContent=m.count??"—"; $("statPosts").textContent=p.count??"—"; $("statEvents").textContent=e.count??"—";
+}
+
+(async function(){
+  await loadSession();
+  await initStats();
+  showPage("home");
+})();
+</script>
+</body>
+</html>
+'''
+
+schema_sql = r'''-- ============================================================
+-- RP ANTI-CORRUPTION CLUB — SUPABASE DATABASE
+-- Run this in Supabase SQL Editor BEFORE using index.html.
+--
+-- IMPORTANT:
+-- 1) Never put the Supabase service_role key in index.html.
+-- 2) Run this entire script as a database owner/admin.
+-- 3) Disable public exposure of private tables through RLS.
+-- ============================================================
+
+create extension if not exists pgcrypto;
+
+-- ---------- ENUMS ----------
+do $$ begin
+  create type public.user_role as enum (
+    'member','super_admin','report_admin','content_admin','user_admin','security_admin'
+  );
+exception when duplicate_object then null; end $$;
+
+do $$ begin
+  create type public.report_status as enum (
+    'submitted','under_review','in_progress','resolved','closed'
+  );
+exception when duplicate_object then null; end $$;
+
+-- ---------- PROFILES ----------
+create table if not exists public.profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  full_name text not null,
+  registration_number text not null unique,
+  role public.user_role not null default 'member',
+  created_at timestamptz not null default now()
+);
+
+alter table public.profiles enable row level security;
+
+create or replace function public.is_admin()
+returns boolean
+language sql stable security definer set search_path = public
+as $$
+  select exists(
+    select 1 from public.profiles
+    where id=auth.uid()
+      and role in ('super_admin','report_admin','content_admin','user_admin','security_admin')
+  );
+$$;
+
+create or replace function public.is_role(target public.user_role)
+returns boolean
+language sql stable security definer set search_path = public
+as $$
+  select exists(select 1 from public.profiles where id=auth.uid() and role=target);
+$$;
+
+drop policy if exists profiles_select_own on public.profiles;
+create policy profiles_select_own on public.profiles
+for select to authenticated using (id=auth.uid() or public.is_admin());
+
+drop policy if exists profiles_update_own on public.profiles;
+create policy profiles_update_own on public.profiles
+for update to authenticated using (id=auth.uid()) with check (id=auth.uid());
+
+-- ---------- PROFILE CREATION TRIGGER ----------
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql security definer set search_path = public
+as $$
+declare
+  reg text;
+  nm text;
+begin
+  reg := upper(coalesce(new.raw_user_meta_data->>'registration_number',''));
+  nm := coalesce(new.raw_user_meta_data->>'full_name','Member');
+  if reg='' then raise exception 'Registration number is required'; end if;
+
+  insert into public.profiles(id,full_name,registration_number)
+  values(new.id,nm,reg)
+  on conflict (id) do nothing;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+after insert on auth.users
+for each row execute function public.handle_new_user();
+
+-- ---------- REPORTS ----------
+create table if not exists public.reports (
+  id uuid primary key default gen_random_uuid(),
+  case_code text not null unique default ('RP-' || upper(substr(encode(gen_random_bytes(6),'hex'),1,10))),
+  reporter_id uuid not null references public.profiles(id) on delete restrict,
+  subject text not null check (char_length(subject) between 1 and 160),
+  initial_body text not null check (char_length(initial_body) between 1 and 10000),
+  status public.report_status not null default 'submitted',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.reports enable row level security;
+
+drop policy if exists reports_select_own_or_admin on public.reports;
+create policy reports_select_own_or_admin on public.reports
+for select to authenticated
+using (reporter_id=auth.uid() or public.is_admin());
+
+drop policy if exists reports_insert_own on public.reports;
+create policy reports_insert_own on public.reports
+for insert to authenticated
+with check (reporter_id=auth.uid());
+
+drop policy if exists reports_update_admin on public.reports;
+create policy reports_update_admin on public.reports
+for update to authenticated
+using (public.is_admin())
+with check (public.is_admin());
+
+-- Force reporter_id from session instead of trusting browser.
+create or replace function public.set_reporter_id()
+returns trigger language plpgsql security definer set search_path=public as $$
+begin
+  new.reporter_id := auth.uid();
+  return new;
+end $$;
+
+drop trigger if exists reports_force_reporter on public.reports;
+create trigger reports_force_reporter before insert on public.reports
+for each row execute function public.set_reporter_id();
+
+-- ---------- PRIVATE REPORT MESSAGES ----------
+create table if not exists public.report_messages (
+  id uuid primary key default gen_random_uuid(),
+  report_id uuid not null references public.reports(id) on delete cascade,
+  sender_id uuid not null references public.profiles(id) on delete restrict,
+  sender_role text not null check (sender_role in ('user','admin')),
+  body text,
+  created_at timestamptz not null default now()
+);
+
+alter table public.report_messages enable row level security;
+
+create or replace function public.can_access_report(rid uuid)
+returns boolean language sql stable security definer set search_path=public
+as $$
+  select exists(select 1 from public.reports r where r.id=rid and (r.reporter_id=auth.uid() or public.is_admin()));
+$$;
+
+drop policy if exists report_messages_select on public.report_messages;
+create policy report_messages_select on public.report_messages
+for select to authenticated using (public.can_access_report(report_id));
+
+drop policy if exists report_messages_insert on public.report_messages;
+create policy report_messages_insert on public.report_messages
+for insert to authenticated
+with check (
+  public.can_access_report(report_id)
+  and sender_id=auth.uid()
+  and (
+    (sender_role='user' and not public.is_admin())
+    or (sender_role='admin' and public.is_admin())
+  )
+);
+
+create or replace function public.set_message_sender()
+returns trigger language plpgsql security definer set search_path=public as $$
+begin
+  new.sender_id := auth.uid();
+  if public.is_admin() then
+    new.sender_role := 'admin';
+  else
+    new.sender_role := 'user';
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists force_message_sender on public.report_messages;
+create trigger force_message_sender before insert on public.report_messages
+for each row execute function public.set_message_sender();
+
+-- ---------- PRIVATE ATTACHMENTS ----------
+create table if not exists public.private_attachments (
+  id uuid primary key default gen_random_uuid(),
+  report_id uuid not null references public.reports(id) on delete cascade,
+  storage_path text not null,
+  file_name text not null,
+  mime_type text,
+  file_size bigint not null check(file_size > 0 and file_size <= 52428800),
+  created_at timestamptz not null default now()
+);
+
+alter table public.private_attachments enable row level security;
+
+drop policy if exists private_attachments_select on public.private_attachments;
+create policy private_attachments_select on public.private_attachments
+for select to authenticated
+using (public.can_access_report(report_id));
+
+drop policy if exists private_attachments_insert on public.private_attachments;
+create policy private_attachments_insert on public.private_attachments
+for insert to authenticated
+with check (public.can_access_report(report_id));
+
+-- ---------- PUBLIC POSTS ----------
+create table if not exists public.public_posts (
+  id uuid primary key default gen_random_uuid(),
+  author_id uuid not null references public.profiles(id) on delete restrict,
+  body text not null check(char_length(body) between 1 and 5000),
+  media_url text,
+  media_type text,
+  status text not null default 'published' check(status in ('published','hidden','deleted')),
+  views bigint not null default 0 check(views >= 0),
+  likes_count bigint not null default 0 check(likes_count >= 0),
+  created_at timestamptz not null default now()
+);
+
+alter table public.public_posts enable row level security;
+
+drop policy if exists public_posts_select on public.public_posts;
+create policy public_posts_select on public.public_posts
+for select to anon,authenticated
+using (status='published' or public.is_admin());
+
+drop policy if exists public_posts_insert on public.public_posts;
+create policy public_posts_insert on public.public_posts
+for insert to authenticated
+with check(author_id=auth.uid());
+
+drop policy if exists public_posts_update_admin on public.public_posts;
+create policy public_posts_update_admin on public.public_posts
+for update to authenticated using (public.is_admin()) with check(public.is_admin());
+
+create or replace function public.set_post_author()
+returns trigger language plpgsql security definer set search_path=public as $$
+begin new.author_id:=auth.uid(); return new; end $$;
+
+drop trigger if exists force_post_author on public.public_posts;
+create trigger force_post_author before insert on public.public_posts
+for each row execute function public.set_post_author();
+
+-- ---------- LIKES ----------
+create table if not exists public.post_likes (
+  post_id uuid not null references public.public_posts(id) on delete cascade,
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key(post_id,user_id)
+);
+
+alter table public.post_likes enable row level security;
+
+drop policy if exists post_likes_select on public.post_likes;
+create policy post_likes_select on public.post_likes
+for select to authenticated using (true);
+
+drop policy if exists post_likes_insert_own on public.post_likes;
+create policy post_likes_insert_own on public.post_likes
+for insert to authenticated with check(user_id=auth.uid());
+
+create or replace function public.like_public_post(post_id uuid)
+returns void language plpgsql security definer set search_path=public
+as $$
+begin
+  insert into public.post_likes(post_id,user_id) values(post_id,auth.uid())
+  on conflict do nothing;
+  update public.public_posts p
+  set likes_count=(select count(*) from public.post_likes l where l.post_id=p.id)
+  where p.id=post_id;
+end $$;
+
+-- ---------- VIEWS ----------
+create table if not exists public.post_views (
+  post_id uuid not null references public.public_posts(id) on delete cascade,
+  viewer_id uuid,
+  viewer_hash text,
+  viewed_at timestamptz not null default now()
+);
+
+alter table public.post_views enable row level security;
+
+create or replace function public.register_public_view(post_id uuid)
+returns void language plpgsql security definer set search_path=public
+as $$
+begin
+  insert into public.post_views(post_id,viewer_id)
+  values(post_id,auth.uid());
+  update public.public_posts
+  set views=views+1 where id=post_id;
+end $$;
+
+-- ---------- EVENTS ----------
+create table if not exists public.club_events (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  description text,
+  event_date timestamptz,
+  location text,
+  created_at timestamptz not null default now()
+);
+alter table public.club_events enable row level security;
+drop policy if exists events_public_read on public.club_events;
+create policy events_public_read on public.club_events for select to anon,authenticated using(true);
+drop policy if exists events_admin_write on public.club_events;
+create policy events_admin_write on public.club_events for all to authenticated using(public.is_admin()) with check(public.is_admin());
+
+-- ---------- AUDIT LOG ----------
+create table if not exists public.audit_logs (
+  id bigint generated always as identity primary key,
+  actor_id uuid references public.profiles(id) on delete set null,
+  actor_role text,
+  action text not null,
+  target_type text,
+  target_id uuid,
+  metadata jsonb,
+  created_at timestamptz not null default now()
+);
+alter table public.audit_logs enable row level security;
+
+drop policy if exists audit_select_admin on public.audit_logs;
+create policy audit_select_admin on public.audit_logs for select to authenticated using(public.is_admin());
+
+-- ---------- ADMIN REPORT VIEW ----------
+create or replace view public.admin_reports_view as
+select id,case_code,subject,status,created_at,updated_at
+from public.reports;
+
+-- ---------- STORAGE ----------
+-- Create these buckets in Supabase Dashboard > Storage if your project
+-- does not allow bucket creation from SQL:
+--   public-media (PUBLIC)
+--   private-files (PRIVATE)
+--
+-- Storage policies below assume the buckets exist.
+
+-- Public media: authenticated users can upload to their own folder.
+drop policy if exists public_media_upload_own on storage.objects;
+create policy public_media_upload_own on storage.objects
+for insert to authenticated
+with check (
+  bucket_id='public-media'
+  and (storage.foldername(name))[1]=auth.uid()::text
+);
+
+drop policy if exists public_media_admin_delete on storage.objects;
+create policy public_media_admin_delete on storage.objects
+for delete to authenticated
+using (bucket_id='public-media' and public.is_admin());
+
+-- Private files: owner/admin only.
+drop policy if exists private_files_select on storage.objects;
+create policy private_files_select on storage.objects
+for select to authenticated
+using (
+  bucket_id='private-files'
+  and (
+    (storage.foldername(name))[1]=auth.uid()::text
+    or public.is_admin()
+  )
+);
+
+drop policy if exists private_files_insert on storage.objects;
+create policy private_files_insert on storage.objects
+for insert to authenticated
+with check (
+  bucket_id='private-files'
+  and (storage.foldername(name))[1]=auth.uid()::text
+);
+
+drop policy if exists private_files_delete on storage.objects;
+create policy private_files_delete on storage.objects
+for delete to authenticated
+using (
+  bucket_id='private-files'
+  and ((storage.foldername(name))[1]=auth.uid()::text or public.is_admin())
+);
+
+-- ---------- SECURITY NOTES ----------
+-- A) Do not expose service_role.
+-- B) Enable MFA for administrators in Supabase Auth.
+-- C) Configure Auth rate limits and password rules.
+-- D) Configure email/SMS recovery through the Edge Function or another
+--    verified recovery channel. A pure "Reg Number only" reset is not
+--    secure enough if there is no second factor.
+-- E) For real deployments, put a WAF/rate-limiter in front of the app
+--    and run security testing before launch.
+'''
+
+edge_function = r'''// Supabase Edge Function: request-password-reset
+// Deploy with:
+// supabase functions deploy request-password-reset
+//
+// This endpoint intentionally does NOT reveal whether a registration
+// number exists. Configure a real recovery channel before production.
+//
+// Required secrets:
+// SUPABASE_URL
+// SUPABASE_SERVICE_ROLE_KEY
+//
+// A production implementation should also add:
+// - CAPTCHA/risk checks
+// - rate limiting
+// - audit logging
+// - short-lived one-time tokens
+// - email/SMS provider
+// - generic response timing
+//
+// This example creates a Supabase recovery request internally.
+// Because the account uses a synthetic internal email, replace the
+// delivery section with your verified email/SMS provider.
+
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+Deno.serve(async (req) => {
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({error:"Method not allowed"}), {
+      status:405, headers:{"content-type":"application/json"}
+    });
+  }
+
+  try {
+    const body = await req.json();
+    const registration_number = String(body.registration_number || "")
+      .trim().toUpperCase().replace(/\s+/g,"");
+
+    if (!registration_number || registration_number.length > 80) {
+      return new Response(JSON.stringify({
+        ok:true,
+        message:"If the registration number is eligible, recovery instructions have been issued."
+      }), {headers:{"content-type":"application/json"}});
+    }
+
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("id,registration_number")
+      .eq("registration_number", registration_number)
+      .maybeSingle();
+
+    // Generic response: never reveal whether account exists.
+    if (!profile) {
+      return new Response(JSON.stringify({
+        ok:true,
+        message:"If the registration number is eligible, recovery instructions have been issued."
+      }), {headers:{"content-type":"application/json"}});
+    }
+
+    // IMPORTANT:
+    // Do not send a password reset merely to the browser.
+    // Connect this section to your verified recovery provider.
+    //
+    // Example concept:
+    // 1. Generate a random 256-bit token.
+    // 2. Store only a hash of the token with 10-minute expiry.
+    // 3. Send the token/link to the verified recovery channel.
+    // 4. On reset, verify token hash + expiry + one-time use.
+    //
+    // This placeholder intentionally stops before claiming a secure
+    // delivery channel exists.
+    console.log("Eligible recovery request for profile:", profile.id);
+
+    return new Response(JSON.stringify({
+      ok:true,
+      message:"If the registration number is eligible, recovery instructions have been issued."
+    }), {headers:{"content-type":"application/json"}});
+  } catch {
+    return new Response(JSON.stringify({
+      ok:true,
+      message:"If the registration number is eligible, recovery instructions have been issued."
+    }), {headers:{"content-type":"application/json"}});
+  }
+});
+'''
+
+readme = r'''# RP Anti-Corruption Club
+
+A secure, responsive web application starter for the RP Anti-Corruption Club.
+
+## Files
+
+- `index.html` — responsive frontend, authentication UI, confidential reports, private case chat, public anonymous feed, media recording, file upload, QR scanner and admin dashboard.
+- `schema.sql` — Supabase database tables, Row Level Security policies, triggers, functions and storage policies.
+- `supabase/functions/request-password-reset/index.ts` — starting point for a secure registration-number recovery flow.
+
+## 1. Create Supabase project
+
+Create a Supabase project and copy:
+
+- Project URL
+- Anon/publishable key
+
+Put them at the top of `index.html`:
+
+```js
+const SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";
+const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_OR_PUBLISHABLE_KEY";
