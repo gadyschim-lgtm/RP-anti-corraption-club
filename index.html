@@ -1,16 +1,3 @@
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RP Anti-Corruption Club</title>
-</head>
-
-<body>
-
-</body>
-</html>
 <!doctype html>
 <html lang="en">
 <head>
@@ -21,6 +8,7 @@
   <title>RP Anti-Corruption Club</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
+
   <script>
     tailwind.config = {
       theme: {
@@ -39,794 +27,4193 @@
       }
     };
   </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 
   <style>
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body { margin:0; font-family:Inter,system-ui,sans-serif; background:#07111f; color:#e8f0f7; }
-    .glass { background:rgba(13,27,42,.78); backdrop-filter:blur(14px); border:1px solid rgba(100,130,160,.18); }
-    .gradient-text { background:linear-gradient(90deg,#20c997,#f4c95d); -webkit-background-clip:text; color:transparent; }
-    .hidden-page { display:none!important; }
-    .modal-bg { background:rgba(1,7,15,.82); backdrop-filter:blur(10px); }
-    input,textarea,select { outline:none; }
-    input:focus,textarea:focus,select:focus { border-color:#20c997!important; box-shadow:0 0 0 3px rgba(32,201,151,.1); }
-    .toast { animation:toast .2s ease-out; }
-    @keyframes toast { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
-    .no-select { user-select:none; -webkit-user-select:none; }
-    video,img { max-width:100%; }
-    ::-webkit-scrollbar { width:8px; }
-    ::-webkit-scrollbar-thumb { background:#27425d; border-radius:20px; }
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, sans-serif;
+      background: #07111f;
+      color: #e8f0f7;
+    }
+
+    .glass {
+      background: rgba(13,27,42,.78);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(100,130,160,.18);
+    }
+
+    .gradient-text {
+      background: linear-gradient(90deg,#20c997,#f4c95d);
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .hidden-page {
+      display: none !important;
+    }
+
+    .modal-bg {
+      background: rgba(1,7,15,.82);
+      backdrop-filter: blur(10px);
+    }
+
+    input,
+    textarea,
+    select {
+      outline: none;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: #20c997 !important;
+      box-shadow: 0 0 0 3px rgba(32,201,151,.1);
+    }
+
+    .toast {
+      animation: toast .2s ease-out;
+    }
+
+    @keyframes toast {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .no-select {
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    video,
+    img {
+      max-width: 100%;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #27425d;
+      border-radius: 20px;
+    }
   </style>
 </head>
 
 <body>
+
+<!-- =========================================================
+     HEADER
+========================================================= -->
 <header class="sticky top-0 z-40 glass">
   <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+
     <button onclick="showPage('home')" class="flex items-center gap-3 min-w-0">
-      <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-accent to-gold grid place-items-center text-ink font-black">RP</div>
+      <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-accent to-gold grid place-items-center text-ink font-black">
+        RP
+      </div>
+
       <div class="text-left min-w-0">
-        <div class="font-extrabold tracking-tight truncate">RP Anti-Corruption Club</div>
-        <div class="text-[10px] uppercase tracking-[.22em] text-slate-400">Integrity • Transparency • Accountability</div>
+        <div class="font-extrabold tracking-tight truncate">
+          RP Anti-Corruption Club
+        </div>
+
+        <div class="text-[10px] uppercase tracking-[.22em] text-slate-400">
+          Integrity • Transparency • Accountability
+        </div>
       </div>
     </button>
 
     <nav id="nav" class="hidden lg:flex items-center gap-1 text-sm">
-      <button data-page="home" class="nav-btn px-3 py-2 rounded-xl hover:bg-white/5">Home</button>
-      <button data-page="feed" class="nav-btn px-3 py-2 rounded-xl hover:bg-white/5">Public Feed</button>
-      <button data-page="report" class="nav-btn px-3 py-2 rounded-xl hover:bg-white/5">Secure Report</button>
-      <button data-page="messages" class="nav-btn px-3 py-2 rounded-xl hover:bg-white/5">My Messages</button>
-      <button data-page="profile" class="nav-btn px-3 py-2 rounded-xl hover:bg-white/5">My Profile</button>
-      <button data-page="admin" id="adminNav" class="nav-btn px-3 py-2 rounded-xl hover:bg-white/5 hidden">Admin</button>
+
+      <button data-page="home"
+        class="nav-btn px-3 py-2 rounded-xl hover:bg-white/5">
+        Home
+      </button>
+
+      <button data-page="feed"
+        class="nav-btn px-3 py-2 rounded-xl hover:bg-white/5">
+        Public Feed
+      </button>
+
+      <button data-page="report"
+        class="nav-btn px-3 py-2 rounded-xl hover:bg-white/5">
+        Secure Report
+      </button>
+
+      <button data-page="messages"
+        class="nav-btn px-3 py-2 rounded-xl hover:bg-white/5">
+        My Messages
+      </button>
+
+      <button data-page="profile"
+        class="nav-btn px-3 py-2 rounded-xl hover:bg-white/5">
+        My Profile
+      </button>
+
+      <button data-page="admin"
+        id="adminNav"
+        class="nav-btn px-3 py-2 rounded-xl hover:bg-white/5 hidden">
+        Admin
+      </button>
+
     </nav>
 
     <div class="flex items-center gap-2">
-      <select id="language" class="hidden sm:block bg-transparent border border-line rounded-xl px-2 py-2 text-xs">
-        <option>English</option><option>Kinyarwanda</option><option>Français</option>
+
+      <select id="language"
+        class="hidden sm:block bg-transparent border border-line rounded-xl px-2 py-2 text-xs">
+        <option>English</option>
+        <option>Kinyarwanda</option>
+        <option>Français</option>
       </select>
-      <button id="authButton" onclick="openAuth()" class="px-4 py-2 rounded-xl bg-accent text-ink font-bold text-sm">Sign In</button>
-      <button id="menuBtn" class="lg:hidden px-3 py-2 rounded-xl border border-line" onclick="toggleMobileNav()">☰</button>
+
+      <button id="authButton"
+        onclick="openAuth()"
+        class="px-4 py-2 rounded-xl bg-accent text-ink font-bold text-sm">
+        Sign In
+      </button>
+
+      <button id="menuBtn"
+        class="lg:hidden px-3 py-2 rounded-xl border border-line"
+        onclick="toggleMobileNav()">
+        ☰
+      </button>
+
     </div>
   </div>
+
   <div id="mobileNav" class="hidden lg:hidden px-4 pb-4">
     <div class="grid grid-cols-2 gap-2 text-sm">
-      <button onclick="showPage('home');toggleMobileNav()">Home</button>
-      <button onclick="showPage('feed');toggleMobileNav()">Public Feed</button>
-      <button onclick="showPage('report');toggleMobileNav()">Secure Report</button>
-      <button onclick="showPage('messages');toggleMobileNav()">My Messages</button>
-      <button onclick="showPage('profile');toggleMobileNav()">My Profile</button>
-      <button id="mobileAdminNav" class="hidden" onclick="showPage('admin');toggleMobileNav()">Admin</button>
+
+      <button onclick="showPage('home');toggleMobileNav()">
+        Home
+      </button>
+
+      <button onclick="showPage('feed');toggleMobileNav()">
+        Public Feed
+      </button>
+
+      <button onclick="showPage('report');toggleMobileNav()">
+        Secure Report
+      </button>
+
+      <button onclick="showPage('messages');toggleMobileNav()">
+        My Messages
+      </button>
+
+      <button onclick="showPage('profile');toggleMobileNav()">
+        My Profile
+      </button>
+
+      <button id="mobileAdminNav"
+        class="hidden"
+        onclick="showPage('admin');toggleMobileNav()">
+        Admin
+      </button>
+
     </div>
   </div>
 </header>
 
+
+<!-- =========================================================
+     MAIN
+========================================================= -->
 <main class="max-w-7xl mx-auto px-4">
+
   <!-- HOME -->
   <section id="page-home" class="page py-10 lg:py-16">
+
     <div class="grid lg:grid-cols-2 gap-8 items-center">
+
       <div>
-        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-bold border border-accent/20">● SECURE CIVIC COMMUNITY</span>
+
+        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-bold border border-accent/20">
+          ● SECURE CIVIC COMMUNITY
+        </span>
+
         <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight mt-5">
-          Building a culture of <span class="gradient-text">integrity.</span>
+          Building a culture of
+          <span class="gradient-text">integrity.</span>
         </h1>
+
         <p class="text-slate-300 text-lg mt-5 max-w-2xl">
-          A secure digital platform for learning, public awareness, community engagement and confidential reporting of suspected corruption or injustice.
+          A secure digital platform for learning, public awareness,
+          community engagement and confidential reporting of suspected
+          corruption or injustice.
         </p>
+
         <div class="flex flex-wrap gap-3 mt-7">
-          <button onclick="showPage('report')" class="px-5 py-3 rounded-2xl bg-accent text-ink font-extrabold">Make a Secure Report</button>
-          <button onclick="showPage('feed')" class="px-5 py-3 rounded-2xl border border-line hover:bg-white/5 font-bold">Explore Public Feed</button>
+
+          <button onclick="showPage('report')"
+            class="px-5 py-3 rounded-2xl bg-accent text-ink font-extrabold">
+            Make a Secure Report
+          </button>
+
+          <button onclick="showPage('feed')"
+            class="px-5 py-3 rounded-2xl border border-line hover:bg-white/5 font-bold">
+            Explore Public Feed
+          </button>
+
         </div>
+
         <div class="grid grid-cols-3 gap-3 mt-9">
-          <div class="glass rounded-2xl p-4"><div id="statMembers" class="text-2xl font-black">—</div><div class="text-xs text-slate-400">Members</div></div>
-          <div class="glass rounded-2xl p-4"><div id="statPosts" class="text-2xl font-black">—</div><div class="text-xs text-slate-400">Public Posts</div></div>
-          <div class="glass rounded-2xl p-4"><div id="statEvents" class="text-2xl font-black">—</div><div class="text-xs text-slate-400">Activities</div></div>
+
+          <div class="glass rounded-2xl p-4">
+            <div id="statMembers" class="text-2xl font-black">—</div>
+            <div class="text-xs text-slate-400">Members</div>
+          </div>
+
+          <div class="glass rounded-2xl p-4">
+            <div id="statPosts" class="text-2xl font-black">—</div>
+            <div class="text-xs text-slate-400">Public Posts</div>
+          </div>
+
+          <div class="glass rounded-2xl p-4">
+            <div id="statEvents" class="text-2xl font-black">—</div>
+            <div class="text-xs text-slate-400">Activities</div>
+          </div>
+
         </div>
       </div>
+
 
       <div class="glass rounded-[2rem] p-6 shadow-glow">
+
         <div class="flex items-center justify-between">
-          <div><div class="text-xs uppercase tracking-widest text-slate-400">How it works</div><div class="text-2xl font-extrabold mt-1">Private by design</div></div>
-          <div class="w-12 h-12 rounded-2xl bg-gold/10 grid place-items-center text-2xl">🛡️</div>
+
+          <div>
+            <div class="text-xs uppercase tracking-widest text-slate-400">
+              How it works
+            </div>
+
+            <div class="text-2xl font-extrabold mt-1">
+              Private by design
+            </div>
+          </div>
+
+          <div class="w-12 h-12 rounded-2xl bg-gold/10 grid place-items-center text-2xl">
+            🛡️
+          </div>
+
         </div>
+
         <div class="space-y-4 mt-6">
-          <div class="flex gap-4"><div class="w-9 h-9 rounded-xl bg-white/5 grid place-items-center">1</div><div><b>Create an account</b><p class="text-sm text-slate-400 mt-1">Use your official registration number and a strong password.</p></div></div>
-          <div class="flex gap-4"><div class="w-9 h-9 rounded-xl bg-white/5 grid place-items-center">2</div><div><b>Submit confidential information</b><p class="text-sm text-slate-400 mt-1">Text, voice, video, images or documents can be attached to a report.</p></div></div>
-          <div class="flex gap-4"><div class="w-9 h-9 rounded-xl bg-white/5 grid place-items-center">3</div><div><b>Communicate with authorized staff</b><p class="text-sm text-slate-400 mt-1">Only authorized administrators can access your case conversation.</p></div></div>
-          <div class="flex gap-4"><div class="w-9 h-9 rounded-xl bg-white/5 grid place-items-center">4</div><div><b>Learn and engage publicly</b><p class="text-sm text-slate-400 mt-1">Public posts use anonymous bot identities instead of member profiles.</p></div></div>
+
+          <div class="flex gap-4">
+            <div class="w-9 h-9 rounded-xl bg-white/5 grid place-items-center">1</div>
+
+            <div>
+              <b>Create an account</b>
+              <p class="text-sm text-slate-400 mt-1">
+                Use your official registration number and a strong password.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex gap-4">
+            <div class="w-9 h-9 rounded-xl bg-white/5 grid place-items-center">2</div>
+
+            <div>
+              <b>Submit confidential information</b>
+              <p class="text-sm text-slate-400 mt-1">
+                Text, voice, video, images or documents can be attached to a report.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex gap-4">
+            <div class="w-9 h-9 rounded-xl bg-white/5 grid place-items-center">3</div>
+
+            <div>
+              <b>Communicate with authorized staff</b>
+              <p class="text-sm text-slate-400 mt-1">
+                Only authorized administrators can access your case conversation.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex gap-4">
+            <div class="w-9 h-9 rounded-xl bg-white/5 grid place-items-center">4</div>
+
+            <div>
+              <b>Learn and engage publicly</b>
+              <p class="text-sm text-slate-400 mt-1">
+                Public posts use anonymous bot identities instead of member profiles.
+              </p>
+            </div>
+          </div>
+
         </div>
       </div>
+
     </div>
 
+
     <div class="grid md:grid-cols-3 gap-5 mt-12">
-      <div class="glass rounded-3xl p-6"><div class="text-3xl">🔐</div><h3 class="font-extrabold text-xl mt-4">Confidential Reporting</h3><p class="text-slate-400 mt-2">Reports and private case conversations are protected by database access policies.</p></div>
-      <div class="glass rounded-3xl p-6"><div class="text-3xl">🤖</div><h3 class="font-extrabold text-xl mt-4">Anonymous Public Identity</h3><p class="text-slate-400 mt-2">Public community content does not expose a member's profile or registration number.</p></div>
-      <div class="glass rounded-3xl p-6"><div class="text-3xl">🌍</div><h3 class="font-extrabold text-xl mt-4">Built for Everyone</h3><p class="text-slate-400 mt-2">Responsive interface for phones, tablets, laptops and desktop computers.</p></div>
+
+      <div class="glass rounded-3xl p-6">
+        <div class="text-3xl">🔐</div>
+        <h3 class="font-extrabold text-xl mt-4">
+          Confidential Reporting
+        </h3>
+        <p class="text-slate-400 mt-2">
+          Reports and private case conversations are protected by database access policies.
+        </p>
+      </div>
+
+      <div class="glass rounded-3xl p-6">
+        <div class="text-3xl">🤖</div>
+        <h3 class="font-extrabold text-xl mt-4">
+          Anonymous Public Identity
+        </h3>
+        <p class="text-slate-400 mt-2">
+          Public community content does not expose a member's profile or registration number.
+        </p>
+      </div>
+
+      <div class="glass rounded-3xl p-6">
+        <div class="text-3xl">🌍</div>
+        <h3 class="font-extrabold text-xl mt-4">
+          Built for Everyone
+        </h3>
+        <p class="text-slate-400 mt-2">
+          Responsive interface for phones, tablets, laptops and desktop computers.
+        </p>
+      </div>
+
     </div>
+
   </section>
+
 
   <!-- FEED -->
   <section id="page-feed" class="page hidden-page py-10">
+
     <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-      <div><div class="text-accent text-xs uppercase tracking-widest font-bold">Community</div><h2 class="text-3xl font-black">Public Feed</h2><p class="text-slate-400 mt-1">Community posts are displayed without public member profiles.</p></div>
-      <button onclick="requireLogin(()=>openPostModal())" class="px-4 py-3 rounded-xl bg-accent text-ink font-bold">+ Create Post</button>
+
+      <div>
+        <div class="text-accent text-xs uppercase tracking-widest font-bold">
+          Community
+        </div>
+
+        <h2 class="text-3xl font-black">
+          Public Feed
+        </h2>
+
+        <p class="text-slate-400 mt-1">
+          Community posts are displayed without public member profiles.
+        </p>
+      </div>
+
+      <button onclick="requireLogin(()=>openPostModal())"
+        class="px-4 py-3 rounded-xl bg-accent text-ink font-bold">
+        + Create Post
+      </button>
+
     </div>
-    <div id="feedList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-5 mt-7"></div>
+
+    <div id="feedList"
+      class="grid md:grid-cols-2 lg:grid-cols-3 gap-5 mt-7">
+    </div>
+
   </section>
+
 
   <!-- REPORT -->
   <section id="page-report" class="page hidden-page py-10">
+
     <div class="max-w-4xl mx-auto">
+
       <div class="glass rounded-3xl p-6 md:p-8">
+
         <div class="flex items-start justify-between gap-4">
-          <div><div class="text-accent text-xs uppercase tracking-widest font-bold">Confidential channel</div><h2 class="text-3xl font-black">Secure Report</h2><p class="text-slate-400 mt-2">Only authorized administrators can access the report and its private conversation.</p></div>
-          <div class="text-3xl">🛡️</div>
+
+          <div>
+
+            <div class="text-accent text-xs uppercase tracking-widest font-bold">
+              Confidential channel
+            </div>
+
+            <h2 class="text-3xl font-black">
+              Secure Report
+            </h2>
+
+            <p class="text-slate-400 mt-2">
+              Only authorized administrators can access the report and its private conversation.
+            </p>
+
+          </div>
+
+          <div class="text-3xl">
+            🛡️
+          </div>
+
         </div>
 
+
         <form id="reportForm" class="mt-7 space-y-5">
+
           <div>
-            <label class="text-sm font-semibold">Subject</label>
-            <input id="reportSubject" required maxlength="160" class="mt-2 w-full bg-black/20 border border-line rounded-xl px-4 py-3" placeholder="Brief subject of the report">
-          </div>
-          <div>
-            <label class="text-sm font-semibold">What happened?</label>
-            <textarea id="reportBody" required maxlength="10000" rows="8" class="mt-2 w-full bg-black/20 border border-line rounded-xl px-4 py-3" placeholder="Describe the suspected corruption, injustice or concern."></textarea>
+
+            <label class="text-sm font-semibold">
+              Subject
+            </label>
+
+            <input id="reportSubject"
+              required
+              maxlength="160"
+              class="mt-2 w-full bg-black/20 border border-line rounded-xl px-4 py-3"
+              placeholder="Brief subject of the report">
+
           </div>
 
-          <div class="grid sm:grid-cols-3 gap-3">
-            <button type="button" onclick="startRecorder('audio')" class="border border-line rounded-xl p-4 hover:bg-white/5 text-left"><b>🎤 Voice Note</b><span class="block text-xs text-slate-400 mt-1">Record audio</span></button>
-            <button type="button" onclick="startRecorder('video')" class="border border-line rounded-xl p-4 hover:bg-white/5 text-left"><b>🎥 Video Note</b><span class="block text-xs text-slate-400 mt-1">Record video</span></button>
-            <label class="border border-line rounded-xl p-4 hover:bg-white/5 cursor-pointer"><b>📎 Upload File</b><span class="block text-xs text-slate-400 mt-1">From your device</span><input id="reportFile" type="file" class="hidden" multiple accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt"></label>
+
+          <div>
+
+            <label class="text-sm font-semibold">
+              What happened?
+            </label>
+
+            <textarea id="reportBody"
+              required
+              maxlength="10000"
+              rows="8"
+              class="mt-2 w-full bg-black/20 border border-line rounded-xl px-4 py-3"
+              placeholder="Describe the suspected corruption, injustice or concern."></textarea>
+
           </div>
-          <div id="attachmentPreview" class="text-sm text-slate-400"></div>
-          <button class="w-full sm:w-auto px-6 py-3 rounded-xl bg-accent text-ink font-extrabold">Submit Confidential Report</button>
+
+
+          <div class="grid sm:grid-cols-3 gap-3">
+
+            <button type="button"
+              onclick="startRecorder('audio')"
+              class="border border-line rounded-xl p-4 hover:bg-white/5 text-left">
+
+              <b>🎤 Voice Note</b>
+
+              <span class="block text-xs text-slate-400 mt-1">
+                Record audio
+              </span>
+
+            </button>
+
+
+            <button type="button"
+              onclick="startRecorder('video')"
+              class="border border-line rounded-xl p-4 hover:bg-white/5 text-left">
+
+              <b>🎥 Video Note</b>
+
+              <span class="block text-xs text-slate-400 mt-1">
+                Record video
+              </span>
+
+            </button>
+
+
+            <label class="border border-line rounded-xl p-4 hover:bg-white/5 cursor-pointer">
+
+              <b>📎 Upload File</b>
+
+              <span class="block text-xs text-slate-400 mt-1">
+                From your device
+              </span>
+
+              <input id="reportFile"
+                type="file"
+                class="hidden"
+                multiple
+                accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt">
+
+            </label>
+
+          </div>
+
+
+          <div id="attachmentPreview"
+            class="text-sm text-slate-400">
+          </div>
+
+
+          <button
+            class="w-full sm:w-auto px-6 py-3 rounded-xl bg-accent text-ink font-extrabold">
+            Submit Confidential Report
+          </button>
+
         </form>
+
       </div>
+
     </div>
+
   </section>
+
 
   <!-- MESSAGES -->
   <section id="page-messages" class="page hidden-page py-10">
+
     <div class="max-w-5xl mx-auto">
+
       <div class="glass rounded-3xl p-6">
-        <div class="flex items-center justify-between"><div><div class="text-accent text-xs uppercase tracking-widest font-bold">Private communication</div><h2 class="text-3xl font-black">My Case Messages</h2></div><button onclick="loadMyReports()" class="border border-line rounded-xl px-3 py-2 text-sm">Refresh</button></div>
-        <div id="myReports" class="mt-6 space-y-3"></div>
-        <div id="conversation" class="hidden mt-6 border-t border-line pt-6">
-          <div class="flex items-center justify-between"><div><b id="conversationTitle">Case</b><div id="conversationStatus" class="text-xs text-slate-400"></div></div><button onclick="closeConversation()" class="text-slate-400">Close</button></div>
-          <div id="messageList" class="mt-4 space-y-3 max-h-[50vh] overflow-y-auto pr-2"></div>
-          <form id="messageForm" class="mt-4 flex gap-2">
-            <input id="messageText" maxlength="5000" required class="flex-1 bg-black/20 border border-line rounded-xl px-4 py-3" placeholder="Write a private message...">
-            <label class="px-4 py-3 border border-line rounded-xl cursor-pointer">📎<input id="messageFile" type="file" class="hidden"></label>
-            <button class="px-5 py-3 rounded-xl bg-accent text-ink font-bold">Send</button>
-          </form>
+
+        <div class="flex items-center justify-between">
+
+          <div>
+
+            <div class="text-accent text-xs uppercase tracking-widest font-bold">
+              Private communication
+            </div>
+
+            <h2 class="text-3xl font-black">
+              My Case Messages
+            </h2>
+
+          </div>
+
+          <button onclick="loadMyReports()"
+            class="border border-line rounded-xl px-3 py-2 text-sm">
+            Refresh
+          </button>
+
         </div>
+
+
+        <div id="myReports"
+          class="mt-6 space-y-3">
+        </div>
+
+
+        <div id="conversation"
+          class="hidden mt-6 border-t border-line pt-6">
+
+          <div class="flex items-center justify-between">
+
+            <div>
+
+              <b id="conversationTitle">
+                Case
+              </b>
+
+              <div id="conversationStatus"
+                class="text-xs text-slate-400">
+              </div>
+
+            </div>
+
+            <button onclick="closeConversation()"
+              class="text-slate-400">
+              Close
+            </button>
+
+          </div>
+
+
+          <div id="messageList"
+            class="mt-4 space-y-3 max-h-[50vh] overflow-y-auto pr-2">
+          </div>
+
+
+          <form id="messageForm"
+            class="mt-4 flex gap-2">
+
+            <input id="messageText"
+              maxlength="5000"
+              class="flex-1 bg-black/20 border border-line rounded-xl px-4 py-3"
+              placeholder="Write a private message...">
+
+            <label class="px-4 py-3 border border-line rounded-xl cursor-pointer">
+              📎
+              <input id="messageFile"
+                type="file"
+                class="hidden">
+            </label>
+
+            <button
+              class="px-5 py-3 rounded-xl bg-accent text-ink font-bold">
+              Send
+            </button>
+
+          </form>
+
+        </div>
+
       </div>
+
     </div>
+
   </section>
+
 
   <!-- PROFILE -->
   <section id="page-profile" class="page hidden-page py-10">
+
     <div class="max-w-3xl mx-auto">
+
       <div class="glass rounded-3xl p-7">
-        <div class="text-accent text-xs uppercase tracking-widest font-bold">Private account</div>
-        <h2 class="text-3xl font-black mt-1">My Profile</h2>
-        <p class="text-slate-400 mt-2">Only you can see this account information.</p>
-        <div id="profileBox" class="mt-7"></div>
-        <button onclick="signOut()" class="mt-7 px-5 py-3 rounded-xl border border-red-500/30 text-red-300">Sign Out</button>
+
+        <div class="text-accent text-xs uppercase tracking-widest font-bold">
+          Private account
+        </div>
+
+        <h2 class="text-3xl font-black mt-1">
+          My Profile
+        </h2>
+
+        <p class="text-slate-400 mt-2">
+          Only you can see this account information.
+        </p>
+
+        <div id="profileBox"
+          class="mt-7">
+        </div>
+
+        <button onclick="signOut()"
+          class="mt-7 px-5 py-3 rounded-xl border border-red-500/30 text-red-300">
+          Sign Out
+        </button>
+
       </div>
+
     </div>
+
   </section>
+
 
   <!-- ADMIN -->
   <section id="page-admin" class="page hidden-page py-10">
+
     <div class="grid xl:grid-cols-[300px_1fr] gap-5">
+
       <aside class="glass rounded-3xl p-5 h-fit">
-        <div class="text-accent text-xs uppercase tracking-widest font-bold">Authorized area</div>
-        <h2 class="text-2xl font-black">Admin Center</h2>
-        <div class="space-y-2 mt-5">
-          <button onclick="adminTab('reports')" class="admin-tab w-full text-left px-4 py-3 rounded-xl bg-white/5">Private Reports</button>
-          <button onclick="adminTab('posts')" class="admin-tab w-full text-left px-4 py-3 rounded-xl hover:bg-white/5">Public Posts</button>
-          <button onclick="adminTab('users')" class="admin-tab w-full text-left px-4 py-3 rounded-xl hover:bg-white/5">Users</button>
-          <button onclick="adminTab('audit')" class="admin-tab w-full text-left px-4 py-3 rounded-xl hover:bg-white/5">Audit Log</button>
+
+        <div class="text-accent text-xs uppercase tracking-widest font-bold">
+          Authorized area
         </div>
+
+        <h2 class="text-2xl font-black">
+          Admin Center
+        </h2>
+
+        <div class="space-y-2 mt-5">
+
+          <button onclick="adminTab('reports')"
+            class="admin-tab w-full text-left px-4 py-3 rounded-xl bg-white/5">
+            Private Reports
+          </button>
+
+          <button onclick="adminTab('posts')"
+            class="admin-tab w-full text-left px-4 py-3 rounded-xl hover:bg-white/5">
+            Public Posts
+          </button>
+
+          <button onclick="adminTab('users')"
+            class="admin-tab w-full text-left px-4 py-3 rounded-xl hover:bg-white/5">
+            Users
+          </button>
+
+          <button onclick="adminTab('audit')"
+            class="admin-tab w-full text-left px-4 py-3 rounded-xl hover:bg-white/5">
+            Audit Log
+          </button>
+
+        </div>
+
       </aside>
-      <div id="adminContent" class="glass rounded-3xl p-6 min-h-[500px]"></div>
+
+
+      <div id="adminContent"
+        class="glass rounded-3xl p-6 min-h-[500px]">
+      </div>
+
     </div>
+
   </section>
+
 </main>
 
+
+<!-- =========================================================
+     FOOTER
+========================================================= -->
 <footer class="border-t border-line mt-16">
+
   <div class="max-w-7xl mx-auto px-4 py-8 grid md:grid-cols-3 gap-6">
-    <div><b>RP Anti-Corruption Club</b><p class="text-sm text-slate-400 mt-2">Promoting integrity, transparency and accountability.</p></div>
-    <div><b>Important</b><p class="text-sm text-slate-400 mt-2">This platform is not a substitute for emergency services or competent legal/enforcement authorities.</p></div>
-    <div><b>Security</b><p class="text-sm text-slate-400 mt-2">Use a private device and do not submit unnecessary sensitive information.</p></div>
+
+    <div>
+      <b>RP Anti-Corruption Club</b>
+      <p class="text-sm text-slate-400 mt-2">
+        Promoting integrity, transparency and accountability.
+      </p>
+    </div>
+
+    <div>
+      <b>Important</b>
+      <p class="text-sm text-slate-400 mt-2">
+        This platform is not a substitute for emergency services
+        or competent legal/enforcement authorities.
+      </p>
+    </div>
+
+    <div>
+      <b>Security</b>
+      <p class="text-sm text-slate-400 mt-2">
+        Use a private device and do not submit unnecessary sensitive information.
+      </p>
+    </div>
+
   </div>
+
 </footer>
 
-<!-- AUTH MODAL -->
-<div id="authModal" class="hidden fixed inset-0 z-50 modal-bg p-4 grid place-items-center">
+
+<!-- =========================================================
+     AUTH MODAL
+========================================================= -->
+<div id="authModal"
+  class="hidden fixed inset-0 z-50 modal-bg p-4 grid place-items-center">
+
   <div class="glass rounded-3xl p-6 w-full max-w-md relative">
-    <button onclick="closeModal('authModal')" class="absolute right-5 top-5 text-slate-400">✕</button>
-    <div id="authTabs" class="grid grid-cols-2 bg-black/20 rounded-xl p-1">
-      <button onclick="setAuthMode('signin')" id="tabSignin" class="py-2 rounded-lg bg-white/10 font-bold">Sign In</button>
-      <button onclick="setAuthMode('signup')" id="tabSignup" class="py-2 rounded-lg font-bold">Sign Up</button>
+
+    <button onclick="closeModal('authModal')"
+      class="absolute right-5 top-5 text-slate-400">
+      ✕
+    </button>
+
+
+    <div id="authTabs"
+      class="grid grid-cols-2 bg-black/20 rounded-xl p-1">
+
+      <button onclick="setAuthMode('signin')"
+        id="tabSignin"
+        class="py-2 rounded-lg bg-white/10 font-bold">
+        Sign In
+      </button>
+
+      <button onclick="setAuthMode('signup')"
+        id="tabSignup"
+        class="py-2 rounded-lg font-bold">
+        Sign Up
+      </button>
+
     </div>
 
-    <form id="authForm" class="mt-6 space-y-4">
-      <div id="fullNameWrap" class="hidden"><label class="text-sm font-semibold">Full Name</label><input id="fullName" class="mt-2 w-full bg-black/20 border border-line rounded-xl px-4 py-3"></div>
-      <div><label class="text-sm font-semibold">Registration Number</label><input id="regNumber" required autocomplete="username" class="mt-2 w-full bg-black/20 border border-line rounded-xl px-4 py-3" placeholder="e.g. RP2026XXXX"></div>
-      <div><label class="text-sm font-semibold">Password</label><input id="password" type="password" required minlength="8" autocomplete="current-password" class="mt-2 w-full bg-black/20 border border-line rounded-xl px-4 py-3"></div>
-      <div id="retypeWrap" class="hidden"><label class="text-sm font-semibold">Retype Password</label><input id="retypePassword" type="password" minlength="8" class="mt-2 w-full bg-black/20 border border-line rounded-xl px-4 py-3"></div>
-      <button id="authSubmit" class="w-full py-3 rounded-xl bg-accent text-ink font-extrabold">Sign In</button>
+
+    <form id="authForm"
+      class="mt-6 space-y-4">
+
+      <div id="fullNameWrap" class="hidden">
+
+        <label class="text-sm font-semibold">
+          Full Name
+        </label>
+
+        <input id="fullName"
+          class="mt-2 w-full bg-black/20 border border-line rounded-xl px-4 py-3">
+
+      </div>
+
+
+      <div>
+
+        <label class="text-sm font-semibold">
+          Registration Number
+        </label>
+
+        <input id="regNumber"
+          required
+          autocomplete="username"
+          class="mt-2 w-full bg-black/20 border border-line rounded-xl px-4 py-3"
+          placeholder="e.g. RP2026XXXX">
+
+      </div>
+
+
+      <div>
+
+        <label class="text-sm font-semibold">
+          Password
+        </label>
+
+        <input id="password"
+          type="password"
+          required
+          minlength="8"
+          autocomplete="current-password"
+          class="mt-2 w-full bg-black/20 border border-line rounded-xl px-4 py-3">
+
+      </div>
+
+
+      <div id="retypeWrap" class="hidden">
+
+        <label class="text-sm font-semibold">
+          Retype Password
+        </label>
+
+        <input id="retypePassword"
+          type="password"
+          minlength="8"
+          class="mt-2 w-full bg-black/20 border border-line rounded-xl px-4 py-3">
+
+      </div>
+
+
+      <button id="authSubmit"
+        class="w-full py-3 rounded-xl bg-accent text-ink font-extrabold">
+        Sign In
+      </button>
+
     </form>
 
-    <button id="forgotBtn" onclick="openForgot()" class="w-full text-sm text-accent mt-4">Forgot password?</button>
-    <div id="authMessage" class="text-sm mt-4 text-center"></div>
+
+    <button id="forgotBtn"
+      onclick="openForgot()"
+      class="w-full text-sm text-accent mt-4">
+      Forgot password?
+    </button>
+
+    <div id="authMessage"
+      class="text-sm mt-4 text-center">
+    </div>
+
   </div>
+
 </div>
 
-<!-- FORGOT MODAL -->
-<div id="forgotModal" class="hidden fixed inset-0 z-[60] modal-bg p-4 grid place-items-center">
+
+<!-- =========================================================
+     FORGOT PASSWORD
+========================================================= -->
+<div id="forgotModal"
+  class="hidden fixed inset-0 z-[60] modal-bg p-4 grid place-items-center">
+
   <div class="glass rounded-3xl p-6 w-full max-w-md">
-    <div class="flex justify-between"><div><div class="text-accent text-xs uppercase tracking-widest font-bold">Account recovery</div><h3 class="text-2xl font-black">Reset Password</h3></div><button onclick="closeModal('forgotModal')">✕</button></div>
-    <p class="text-sm text-slate-400 mt-3">Enter your registration number. The secure recovery service must verify the account before allowing a password reset.</p>
-    <form id="forgotForm" class="mt-5 space-y-4">
-      <input id="forgotReg" required class="w-full bg-black/20 border border-line rounded-xl px-4 py-3" placeholder="Registration Number">
-      <button class="w-full py-3 rounded-xl bg-accent text-ink font-extrabold">Request Reset</button>
-    </form>
-    <div id="forgotMessage" class="text-sm mt-4"></div>
-  </div>
-</div>
 
-<!-- POST MODAL -->
-<div id="postModal" class="hidden fixed inset-0 z-50 modal-bg p-4 grid place-items-center">
-  <div class="glass rounded-3xl p-6 w-full max-w-xl">
-    <div class="flex justify-between"><h3 class="text-2xl font-black">Create Public Post</h3><button onclick="closeModal('postModal')">✕</button></div>
-    <form id="postForm" class="mt-5 space-y-4">
-      <textarea id="postBody" required maxlength="5000" rows="7" class="w-full bg-black/20 border border-line rounded-xl px-4 py-3" placeholder="Share an awareness message, educational content or community idea..."></textarea>
-      <input id="postFile" type="file" accept="image/*,video/*,.pdf,.doc,.docx">
-      <button class="w-full py-3 rounded-xl bg-accent text-ink font-extrabold">Publish</button>
-    </form>
-  </div>
-</div>
+    <div class="flex justify-between">
 
-<!-- QR MODAL -->
-<div id="qrModal" class="hidden fixed inset-0 z-50 modal-bg p-4 grid place-items-center">
-  <div class="glass rounded-3xl p-6 w-full max-w-lg">
-    <div class="flex justify-between"><h3 class="text-2xl font-black">Scan QR Code</h3><button onclick="stopQR();closeModal('qrModal')">✕</button></div>
-    <video id="qrVideo" class="w-full rounded-2xl mt-5 bg-black" playsinline></video>
-    <canvas id="qrCanvas" class="hidden"></canvas>
-    <p id="qrStatus" class="text-sm text-slate-400 mt-3">Point your camera at a QR code.</p>
-  </div>
-</div>
+      <div>
 
-<!-- RECORDER MODAL -->
-<div id="recorderModal" class="hidden fixed inset-0 z-50 modal-bg p-4 grid place-items-center">
-  <div class="glass rounded-3xl p-6 w-full max-w-lg">
-    <div class="flex justify-between"><h3 id="recorderTitle" class="text-2xl font-black">Recorder</h3><button onclick="stopRecorder();closeModal('recorderModal')">✕</button></div>
-    <video id="recorderPreview" class="w-full rounded-2xl mt-5 bg-black" autoplay muted playsinline></video>
-    <div class="flex gap-3 mt-5">
-      <button id="recordStart" onclick="beginRecording()" class="flex-1 py-3 rounded-xl bg-accent text-ink font-bold">Start</button>
-      <button id="recordStop" onclick="stopRecorder()" class="flex-1 py-3 rounded-xl border border-line font-bold">Stop</button>
+        <div class="text-accent text-xs uppercase tracking-widest font-bold">
+          Account recovery
+        </div>
+
+        <h3 class="text-2xl font-black">
+          Reset Password
+        </h3>
+
+      </div>
+
+      <button onclick="closeModal('forgotModal')">
+        ✕
+      </button>
+
     </div>
-    <p id="recordStatus" class="text-sm text-slate-400 mt-3"></p>
+
+
+    <p class="text-sm text-slate-400 mt-3">
+      Enter your registration number. The secure recovery service must verify
+      the account before allowing a password reset.
+    </p>
+
+
+    <form id="forgotForm"
+      class="mt-5 space-y-4">
+
+      <input id="forgotReg"
+        required
+        class="w-full bg-black/20 border border-line rounded-xl px-4 py-3"
+        placeholder="Registration Number">
+
+      <button
+        class="w-full py-3 rounded-xl bg-accent text-ink font-extrabold">
+        Request Reset
+      </button>
+
+    </form>
+
+
+    <div id="forgotMessage"
+      class="text-sm mt-4">
+    </div>
+
   </div>
+
 </div>
 
-<div id="toastHost" class="fixed right-4 bottom-4 z-[100] space-y-2"></div>
+
+<!-- =========================================================
+     POST MODAL
+========================================================= -->
+<div id="postModal"
+  class="hidden fixed inset-0 z-50 modal-bg p-4 grid place-items-center">
+
+  <div class="glass rounded-3xl p-6 w-full max-w-xl">
+
+    <div class="flex justify-between">
+
+      <h3 class="text-2xl font-black">
+        Create Public Post
+      </h3>
+
+      <button onclick="closeModal('postModal')">
+        ✕
+      </button>
+
+    </div>
+
+
+    <form id="postForm"
+      class="mt-5 space-y-4">
+
+      <textarea id="postBody"
+        required
+        maxlength="5000"
+        rows="7"
+        class="w-full bg-black/20 border border-line rounded-xl px-4 py-3"
+        placeholder="Share an awareness message, educational content or community idea..."></textarea>
+
+      <input id="postFile"
+        type="file"
+        accept="image/*,video/*,.pdf,.doc,.docx">
+
+      <button
+        class="w-full py-3 rounded-xl bg-accent text-ink font-extrabold">
+        Publish
+      </button>
+
+    </form>
+
+  </div>
+
+</div>
+
+
+<!-- =========================================================
+     QR MODAL
+========================================================= -->
+<div id="qrModal"
+  class="hidden fixed inset-0 z-50 modal-bg p-4 grid place-items-center">
+
+  <div class="glass rounded-3xl p-6 w-full max-w-lg">
+
+    <div class="flex justify-between">
+
+      <h3 class="text-2xl font-black">
+        Scan QR Code
+      </h3>
+
+      <button onclick="stopQR();closeModal('qrModal')">
+        ✕
+      </button>
+
+    </div>
+
+
+    <video id="qrVideo"
+      class="w-full rounded-2xl mt-5 bg-black"
+      playsinline>
+    </video>
+
+    <canvas id="qrCanvas"
+      class="hidden">
+    </canvas>
+
+    <p id="qrStatus"
+      class="text-sm text-slate-400 mt-3">
+      Point your camera at a QR code.
+    </p>
+
+  </div>
+
+</div>
+
+
+<!-- =========================================================
+     RECORDER MODAL
+========================================================= -->
+<div id="recorderModal"
+  class="hidden fixed inset-0 z-50 modal-bg p-4 grid place-items-center">
+
+  <div class="glass rounded-3xl p-6 w-full max-w-lg">
+
+    <div class="flex justify-between">
+
+      <h3 id="recorderTitle"
+        class="text-2xl font-black">
+        Recorder
+      </h3>
+
+      <button onclick="stopRecorder();closeModal('recorderModal')">
+        ✕
+      </button>
+
+    </div>
+
+
+    <video id="recorderPreview"
+      class="w-full rounded-2xl mt-5 bg-black"
+      autoplay
+      muted
+      playsinline>
+    </video>
+
+
+    <div class="flex gap-3 mt-5">
+
+      <button id="recordStart"
+        onclick="beginRecording()"
+        class="flex-1 py-3 rounded-xl bg-accent text-ink font-bold">
+        Start
+      </button>
+
+      <button id="recordStop"
+        onclick="stopRecorder()"
+        class="flex-1 py-3 rounded-xl border border-line font-bold">
+        Stop
+      </button>
+
+    </div>
+
+
+    <p id="recordStatus"
+      class="text-sm text-slate-400 mt-3">
+    </p>
+
+  </div>
+
+</div>
+
+
+<div id="toastHost"
+  class="fixed right-4 bottom-4 z-[100] space-y-2">
+</div>
+
 
 <script>
+
 /* ============================================================
    RP ANTI-CORRUPTION CLUB
-   Frontend configuration
-   IMPORTANT: use the Supabase ANON/PUBLISHABLE key only here.
-   NEVER put the service_role key in this file.
+   SUPABASE CONFIGURATION
    ============================================================ */
-const SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";
-const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_OR_PUBLISHABLE_KEY";
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const SUPABASE_URL =
+  "https://gmegddwwtjnkcoonspho.supabase.co";
+
+const SUPABASE_ANON_KEY =
+  "sb_publishable_U-9bptbhyQL295EsFIEBsw_LsxQwAZJ";
+
+const sb = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+);
+
+
+/* ============================================================
+   GLOBAL VARIABLES
+============================================================ */
 
 let currentUser = null;
 let currentProfile = null;
 let authMode = "signin";
 let selectedReportId = null;
+
 let recorder = null;
 let recorderStream = null;
 let recorderChunks = [];
 let recorderKind = "audio";
+
 let qrStream = null;
 let qrTimer = null;
+
 let pendingAttachments = [];
 
-const $ = id => document.getElementById(id);
-const escapeHTML = s => String(s ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
-const fmtDate = d => new Date(d).toLocaleString();
 
-function toast(message, type="info") {
+/* ============================================================
+   HELPERS
+============================================================ */
+
+const $ = id => document.getElementById(id);
+
+const escapeHTML = s =>
+  String(s ?? "").replace(
+    /[&<>"']/g,
+    c => ({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#039;"
+    }[c])
+  );
+
+const fmtDate = d =>
+  new Date(d).toLocaleString();
+
+
+function toast(message, type = "info") {
+
   const el = document.createElement("div");
-  el.className = "toast glass rounded-xl px-4 py-3 text-sm shadow-glow max-w-sm";
+
+  el.className =
+    "toast glass rounded-xl px-4 py-3 text-sm shadow-glow max-w-sm";
+
+  if (type === "success") {
+    el.classList.add("border-accent");
+  }
+
+  if (type === "error") {
+    el.classList.add("border-red-500");
+  }
+
   el.innerHTML = escapeHTML(message);
+
   $("toastHost").appendChild(el);
-  setTimeout(()=>el.remove(), 3500);
+
+  setTimeout(() => el.remove(), 3500);
 }
 
-function closeModal(id){ $(id).classList.add("hidden"); }
-function openModal(id){ $(id).classList.remove("hidden"); }
-function toggleMobileNav(){ $("mobileNav").classList.toggle("hidden"); }
+
+function closeModal(id) {
+  const el = $(id);
+  if (el) el.classList.add("hidden");
+}
+
+
+function openModal(id) {
+  const el = $(id);
+  if (el) el.classList.remove("hidden");
+}
+
+
+function toggleMobileNav() {
+  $("mobileNav").classList.toggle("hidden");
+}
+
+
+/* ============================================================
+   PAGE NAVIGATION
+============================================================ */
 
 function showPage(name) {
-  document.querySelectorAll(".page").forEach(x=>x.classList.add("hidden-page"));
-  const p = $("page-"+name);
-  if (!p) return;
-  p.classList.remove("hidden-page");
-  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("bg-white/10", b.dataset.page===name));
-  if (name==="feed") loadFeed();
-  if (name==="profile") loadProfile();
-  if (name==="messages") loadMyReports();
-  if (name==="admin") { if (isAdmin()) adminTab("reports"); else showPage("home"); }
-  window.scrollTo({top:0,behavior:"smooth"});
+
+  document.querySelectorAll(".page")
+    .forEach(x => x.classList.add("hidden-page"));
+
+  const page = $("page-" + name);
+
+  if (!page) return;
+
+  page.classList.remove("hidden-page");
+
+  document.querySelectorAll(".nav-btn")
+    .forEach(btn => {
+      btn.classList.toggle(
+        "bg-white/10",
+        btn.dataset.page === name
+      );
+    });
+
+  if (name === "feed") {
+    loadFeed();
+  }
+
+  if (name === "profile") {
+    loadProfile();
+  }
+
+  if (name === "messages") {
+    loadMyReports();
+  }
+
+  if (name === "admin") {
+
+    if (isAdmin()) {
+      adminTab("reports");
+    } else {
+      showPage("home");
+    }
+
+  }
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
 }
 
-document.querySelectorAll(".nav-btn").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.page)));
 
-function isAdmin(){ return currentProfile?.role === "super_admin" || currentProfile?.role === "report_admin" || currentProfile?.role === "content_admin" || currentProfile?.role === "user_admin" || currentProfile?.role === "security_admin"; }
+document.querySelectorAll(".nav-btn")
+  .forEach(btn => {
 
-function requireLogin(fn){
-  if (!currentUser){ openAuth(); return; }
+    btn.addEventListener(
+      "click",
+      () => showPage(btn.dataset.page)
+    );
+
+  });
+
+
+/* ============================================================
+   AUTHORIZATION
+============================================================ */
+
+function isAdmin() {
+
+  return [
+    "super_admin",
+    "report_admin",
+    "content_admin",
+    "user_admin",
+    "security_admin"
+  ].includes(currentProfile?.role);
+
+}
+
+
+function requireLogin(fn) {
+
+  if (!currentUser) {
+    openAuth();
+    return;
+  }
+
   fn();
 }
 
-function openAuth(){ setAuthMode("signin"); openModal("authModal"); }
-function setAuthMode(mode){
-  authMode=mode;
-  $("fullNameWrap").classList.toggle("hidden",mode!=="signup");
-  $("retypeWrap").classList.toggle("hidden",mode!=="signup");
-  $("forgotBtn").classList.toggle("hidden",mode!=="signin");
-  $("authSubmit").textContent=mode==="signup"?"Create Account":"Sign In";
-  $("tabSignin").classList.toggle("bg-white/10",mode==="signin");
-  $("tabSignup").classList.toggle("bg-white/10",mode==="signup");
-  $("authMessage").textContent="";
+
+/* ============================================================
+   AUTH UI
+============================================================ */
+
+function openAuth() {
+
+  setAuthMode("signin");
+  openModal("authModal");
+
 }
 
-function normalizeReg(v){
-  return v.trim().toUpperCase().replace(/\s+/g,"");
+
+function setAuthMode(mode) {
+
+  authMode = mode;
+
+  $("fullNameWrap")
+    .classList.toggle("hidden", mode !== "signup");
+
+  $("retypeWrap")
+    .classList.toggle("hidden", mode !== "signup");
+
+  $("forgotBtn")
+    .classList.toggle("hidden", mode !== "signin");
+
+  $("authSubmit").textContent =
+    mode === "signup"
+      ? "Create Account"
+      : "Sign In";
+
+  $("tabSignin")
+    .classList.toggle(
+      "bg-white/10",
+      mode === "signin"
+    );
+
+  $("tabSignup")
+    .classList.toggle(
+      "bg-white/10",
+      mode === "signup"
+    );
+
+  $("authMessage").textContent = "";
+
 }
 
-/* Supabase Auth normally expects an email/phone.
-   We map a registration number to a non-user-facing synthetic email.
-   This lets the UI use Reg Number + Password without exposing email.
-   Password recovery is handled by the secure Edge Function in this package. */
-function syntheticEmail(reg){
-  const clean = normalizeReg(reg).toLowerCase().replace(/[^a-z0-9._-]/g,"");
+
+/* ============================================================
+   REGISTRATION NUMBER
+============================================================ */
+
+function normalizeReg(value) {
+
+  return value
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "");
+
+}
+
+
+function syntheticEmail(reg) {
+
+  const clean =
+    normalizeReg(reg)
+      .toLowerCase()
+      .replace(/[^a-z0-9._-]/g, "");
+
   return `${clean}@rpac.internal`;
+
 }
 
-$("authForm").addEventListener("submit", async e=>{
-  e.preventDefault();
-  $("authMessage").textContent="Working...";
-  const reg=normalizeReg($("regNumber").value);
-  const password=$("password").value;
 
-  try{
-    if(authMode==="signup"){
-      const fullName=$("fullName").value.trim();
-      const retype=$("retypePassword").value;
-      if(!fullName) throw new Error("Full name is required.");
-      if(password.length<8) throw new Error("Password must be at least 8 characters.");
-      if(password!==retype) throw new Error("Passwords do not match.");
+/* ============================================================
+   SIGN UP / SIGN IN
+============================================================ */
 
-      const {data,error}=await sb.auth.signUp({
-        email:syntheticEmail(reg),
-        password,
-        options:{data:{registration_number:reg,full_name:fullName}}
-      });
-      if(error) throw error;
-      if(!data.user) throw new Error("Account creation did not return a user.");
-      // The profile row is created by a database trigger.
-      $("authMessage").textContent="Account created. You can sign in when the account is active.";
-      setTimeout(()=>{setAuthMode("signin");$("regNumber").value=reg;$("password").value="";},1200);
-    }else{
-      const {data,error}=await sb.auth.signInWithPassword({email:syntheticEmail(reg),password});
-      if(error) throw error;
-      if(!data.user) throw new Error("Sign in failed.");
-      closeModal("authModal");
-      toast("Signed in successfully.","success");
+$("authForm").addEventListener(
+  "submit",
+  async e => {
+
+    e.preventDefault();
+
+    $("authMessage").textContent =
+      "Working...";
+
+    const reg =
+      normalizeReg($("regNumber").value);
+
+    const password =
+      $("password").value;
+
+    try {
+
+      if (!reg) {
+        throw new Error(
+          "Registration number is required."
+        );
+      }
+
+
+      /* ---------------- SIGN UP ---------------- */
+
+      if (authMode === "signup") {
+
+        const fullName =
+          $("fullName").value.trim();
+
+        const retype =
+          $("retypePassword").value;
+
+        if (!fullName) {
+          throw new Error(
+            "Full name is required."
+          );
+        }
+
+        if (password.length < 8) {
+          throw new Error(
+            "Password must be at least 8 characters."
+          );
+        }
+
+        if (password !== retype) {
+          throw new Error(
+            "Passwords do not match."
+          );
+        }
+
+
+        const { data, error } =
+          await sb.auth.signUp({
+
+            email: syntheticEmail(reg),
+
+            password,
+
+            options: {
+              data: {
+                registration_number: reg,
+                full_name: fullName
+              }
+            }
+
+          });
+
+
+        if (error) {
+          throw error;
+        }
+
+        if (!data?.user) {
+          throw new Error(
+            "Account creation did not return a user."
+          );
+        }
+
+
+        /*
+          If email confirmation is disabled,
+          Supabase normally returns a session.
+        */
+
+        if (data.session) {
+
+          currentUser = data.user;
+
+          await loadCurrentProfile();
+
+          updateAuthUI();
+
+          closeModal("authModal");
+
+          toast(
+            "Account created and signed in successfully.",
+            "success"
+          );
+
+          showPage("home");
+
+        } else {
+
+          $("authMessage").textContent =
+            "Account created. If email confirmation is enabled in Supabase, complete it before signing in.";
+
+          setTimeout(() => {
+
+            setAuthMode("signin");
+
+            $("regNumber").value = reg;
+
+            $("password").value = "";
+
+          }, 1500);
+
+        }
+
+      }
+
+
+      /* ---------------- SIGN IN ---------------- */
+
+      else {
+
+        const { data, error } =
+          await sb.auth.signInWithPassword({
+
+            email: syntheticEmail(reg),
+
+            password
+
+          });
+
+
+        if (error) {
+          throw error;
+        }
+
+        if (!data?.user) {
+          throw new Error(
+            "Sign in failed."
+          );
+        }
+
+
+        currentUser = data.user;
+
+        await loadCurrentProfile();
+
+        updateAuthUI();
+
+        closeModal("authModal");
+
+        toast(
+          "Signed in successfully.",
+          "success"
+        );
+
+        showPage("home");
+
+      }
+
     }
-  }catch(err){
-    $("authMessage").textContent=err.message || "Authentication failed.";
+
+    catch (err) {
+
+      console.error(err);
+
+      $("authMessage").textContent =
+        err?.message ||
+        "Authentication failed.";
+
+    }
+
   }
-});
+);
 
-function openForgot(){ closeModal("authModal"); openModal("forgotModal"); }
 
-$("forgotForm").addEventListener("submit",async e=>{
-  e.preventDefault();
-  const reg=normalizeReg($("forgotReg").value);
-  $("forgotMessage").textContent="Checking secure recovery service...";
-  try{
-    const res=await fetch(`${SUPABASE_URL}/functions/v1/request-password-reset`,{
-      method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({registration_number:reg})
-    });
-    const data=await res.json();
-    if(!res.ok) throw new Error(data.error || "Recovery request failed.");
-    $("forgotMessage").textContent="If the registration number is eligible, recovery instructions have been issued through the configured secure recovery channel.";
-  }catch(err){ $("forgotMessage").textContent=err.message; }
-});
+/* ============================================================
+   FORGOT PASSWORD
+============================================================ */
 
-async function loadSession(){
-  const {data}=await sb.auth.getSession();
-  currentUser=data.session?.user || null;
-  if(currentUser) await loadCurrentProfile();
+function openForgot() {
+
+  closeModal("authModal");
+
+  openModal("forgotModal");
+
+}
+
+
+$("forgotForm").addEventListener(
+  "submit",
+  async e => {
+
+    e.preventDefault();
+
+    const reg =
+      normalizeReg($("forgotReg").value);
+
+    $("forgotMessage").textContent =
+      "Checking secure recovery service...";
+
+    try {
+
+      const response =
+        await fetch(
+          `${SUPABASE_URL}/functions/v1/request-password-reset`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              registration_number: reg
+            })
+          }
+        );
+
+
+      let data = {};
+
+      try {
+        data = await response.json();
+      } catch (_) {}
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          data.error ||
+          "Recovery request failed."
+        );
+
+      }
+
+
+      $("forgotMessage").textContent =
+        "If the registration number is eligible, recovery instructions have been issued through the configured secure recovery channel.";
+
+    }
+
+    catch (err) {
+
+      $("forgotMessage").textContent =
+        err.message ||
+        "Recovery request failed.";
+
+    }
+
+  }
+);
+
+
+/* ============================================================
+   SESSION
+============================================================ */
+
+async function loadSession() {
+
+  const {
+    data,
+    error
+  } = await sb.auth.getSession();
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  currentUser =
+    data.session?.user || null;
+
+  if (currentUser) {
+    await loadCurrentProfile();
+  }
+
   updateAuthUI();
+
 }
-async function loadCurrentProfile(){
-  if(!currentUser) return;
-  const {data,error}=await sb.from("profiles").select("*").eq("id",currentUser.id).single();
-  if(error){ console.error(error); return; }
-  currentProfile=data;
+
+
+async function loadCurrentProfile() {
+
+  if (!currentUser) {
+    currentProfile = null;
+    return;
+  }
+
+  const {
+    data,
+    error
+  } = await sb
+    .from("profiles")
+    .select("*")
+    .eq("id", currentUser.id)
+    .maybeSingle();
+
+
+  if (error) {
+
+    console.error(
+      "Profile error:",
+      error
+    );
+
+    currentProfile = null;
+
+    return;
+  }
+
+
+  currentProfile = data || null;
+
 }
-function updateAuthUI(){
-  $("authButton").textContent=currentUser ? "Account" : "Sign In";
+
+
+function updateAuthUI() {
+
+  $("authButton").textContent =
+    currentUser
+      ? "Account"
+      : "Sign In";
+
   const admin = isAdmin();
-  $("adminNav").classList.toggle("hidden",!admin);
-  $("mobileAdminNav").classList.toggle("hidden",!admin);
-}
-async function signOut(){
-  await sb.auth.signOut();
-  currentUser=null; currentProfile=null;
-  updateAuthUI(); showPage("home"); toast("Signed out.");
-}
-sb.auth.onAuthStateChange(async (_event,session)=>{
-  currentUser=session?.user||null;
-  if(currentUser) await loadCurrentProfile(); else currentProfile=null;
-  updateAuthUI();
-});
 
-/* ---------- PUBLIC FEED ---------- */
-async function loadFeed(){
-  const box=$("feedList"); box.innerHTML='<div class="text-slate-400">Loading posts...</div>';
-  const {data,error}=await sb.from("public_posts")
-    .select("id,body,media_url,media_type,created_at,views,likes_count")
-    .eq("status","published")
-    .order("created_at",{ascending:false}).limit(60);
-  if(error){ box.innerHTML='<div class="text-red-300">Unable to load public feed.</div>'; console.error(error); return; }
-  if(!data.length){ box.innerHTML='<div class="text-slate-400">No public posts yet.</div>'; return; }
-  box.innerHTML=data.map(p=>`
-    <article class="glass rounded-3xl overflow-hidden">
-      ${p.media_url ? renderMedia(p.media_url,p.media_type) : ""}
-      <div class="p-5">
-        <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-gradient-to-br from-accent/40 to-gold/40 grid place-items-center">🤖</div><div><b>RP Community Bot</b><div class="text-xs text-slate-500">${fmtDate(p.created_at)}</div></div></div>
-        <p class="text-slate-200 whitespace-pre-wrap mt-4">${escapeHTML(p.body)}</p>
-        <div class="flex items-center gap-5 mt-5 text-sm text-slate-400">
-          <button onclick="likePost('${p.id}')" class="hover:text-accent">♥ <span>${p.likes_count||0}</span></button>
-          <button onclick="registerView('${p.id}')" class="hover:text-accent">◉ ${p.views||0} views</button>
-        </div>
-      </div>
-    </article>`).join("");
-}
-function renderMedia(url,type){
-  if(type?.startsWith("image")) return `<img src="${escapeHTML(url)}" class="w-full max-h-72 object-cover no-select" alt="Community media" draggable="false">`;
-  if(type?.startsWith("video")) return `<video src="${escapeHTML(url)}" controls controlsList="nodownload" class="w-full max-h-80 bg-black no-select"></video>`;
-  if(type?.startsWith("audio")) return `<audio src="${escapeHTML(url)}" controls controlsList="nodownload" class="w-full mt-3"></audio>`;
-  return `<div class="p-5 text-slate-400">Attachment available</div>`;
-}
-async function likePost(id){
-  requireLogin(async()=>{
-    const {error}=await sb.rpc("like_public_post",{post_id:id});
-    if(error) toast("Like could not be added."); else loadFeed();
-  });
-}
-async function registerView(id){ await sb.rpc("register_public_view",{post_id:id}); }
+  $("adminNav")
+    .classList.toggle(
+      "hidden",
+      !admin
+    );
 
-/* ---------- POSTS ---------- */
-async function openPostModal(){ $("postBody").value=""; $("postFile").value=""; openModal("postModal"); }
-$("postForm").addEventListener("submit",async e=>{
-  e.preventDefault();
-  if(!currentUser) return;
-  try{
-    const body=$("postBody").value.trim();
-    if(!body) throw new Error("Post text is required.");
-    let media_url=null,media_type=null;
-    const file=$("postFile").files[0];
-    if(file){
-      const safe=validateFile(file,25);
-      if(!safe.ok) throw new Error(safe.message);
-      const path=`${currentUser.id}/${crypto.randomUUID()}-${safe.name}`;
-      const {error:up}=await sb.storage.from("public-media").upload(path,file,{contentType:file.type||"application/octet-stream",upsert:false});
-      if(up) throw up;
-      const {data:pub}=sb.storage.from("public-media").getPublicUrl(path);
-      media_url=pub.publicUrl; media_type=file.type;
-    }
-    const {error}=await sb.from("public_posts").insert({body,media_url,media_type});
-    if(error) throw error;
-    closeModal("postModal"); toast("Post published."); loadFeed();
-  }catch(err){ toast(err.message||"Could not publish post."); }
-});
+  $("mobileAdminNav")
+    .classList.toggle(
+      "hidden",
+      !admin
+    );
 
-/* ---------- REPORTS ---------- */
-$("reportFile").addEventListener("change",e=>{
-  const files=[...e.target.files];
-  pendingAttachments=files;
-  $("attachmentPreview").textContent=files.length ? files.map(f=>`${f.name} (${Math.round(f.size/1024)} KB)`).join(" • ") : "";
-});
-$("reportForm").addEventListener("submit",async e=>{
-  e.preventDefault();
-  if(!currentUser){openAuth();return;}
-  try{
-    const subject=$("reportSubject").value.trim(), body=$("reportBody").value.trim();
-    if(!subject||!body) throw new Error("Subject and description are required.");
-    const {data:report,error}=await sb.from("reports").insert({subject,initial_body:body}).select("id,case_code").single();
-    if(error) throw error;
-    for(const f of pendingAttachments){
-      const safe=validateFile(f,50); if(!safe.ok) throw new Error(safe.message);
-      await uploadPrivateAttachment("report",report.id,f);
-    }
-    pendingAttachments=[];
-    $("reportForm").reset(); $("attachmentPreview").textContent="";
-    toast(`Report submitted. Case ID: ${report.case_code}`); showPage("messages");
-  }catch(err){ toast(err.message||"Report submission failed."); }
-});
-
-/* ---------- PRIVATE CASE CHAT ---------- */
-async function loadMyReports(){
-  if(!currentUser){ $("myReports").innerHTML='<div class="text-slate-400">Sign in to view your private cases.</div>'; return; }
-  const {data,error}=await sb.from("reports").select("id,case_code,subject,status,created_at,updated_at").order("created_at",{ascending:false});
-  if(error){ $("myReports").innerHTML='<div class="text-red-300">Could not load cases.</div>'; return; }
-  $("myReports").innerHTML=data.length?data.map(r=>`
-    <button onclick="openConversation('${r.id}')" class="w-full text-left glass rounded-2xl p-4 hover:bg-white/5">
-      <div class="flex justify-between gap-4"><b>${escapeHTML(r.case_code)}</b><span class="text-xs px-2 py-1 rounded-lg bg-white/5">${escapeHTML(r.status)}</span></div>
-      <div class="font-semibold mt-2">${escapeHTML(r.subject)}</div>
-      <div class="text-xs text-slate-500 mt-1">${fmtDate(r.updated_at||r.created_at)}</div>
-    </button>`).join(""):'<div class="text-slate-400">No cases yet.</div>';
-}
-async function openConversation(id){
-  selectedReportId=id;
-  const {data:report}=await sb.from("reports").select("case_code,subject,status").eq("id",id).single();
-  if(!report) return;
-  $("conversationTitle").textContent=`${report.case_code} — ${report.subject}`;
-  $("conversationStatus").textContent=`Status: ${report.status}`;
-  $("conversation").classList.remove("hidden");
-  await loadMessages();
-}
-function closeConversation(){ selectedReportId=null; $("conversation").classList.add("hidden"); }
-async function loadMessages(){
-  if(!selectedReportId) return;
-  const {data,error}=await sb.from("report_messages").select("id,sender_role,body,created_at").eq("report_id",selectedReportId).order("created_at",{ascending:true});
-  if(error){toast("Could not load messages.");return;}
-  $("messageList").innerHTML=(data||[]).map(m=>`
-    <div class="${m.sender_role==='user'?'text-right':''}">
-      <div class="inline-block max-w-[85%] rounded-2xl px-4 py-3 ${m.sender_role==='user'?'bg-accent/15':'bg-white/5'}">
-        <div class="text-xs text-slate-500 mb-1">${m.sender_role==='user'?'You':'Authorized Admin'}</div>
-        <div class="whitespace-pre-wrap">${escapeHTML(m.body||"Attachment")}</div>
-        <div class="text-[10px] text-slate-500 mt-2">${fmtDate(m.created_at)}</div>
-      </div>
-    </div>`).join("");
-  $("messageList").scrollTop=$("messageList").scrollHeight;
-}
-$("messageForm").addEventListener("submit",async e=>{
-  e.preventDefault();
-  if(!selectedReportId) return;
-  const body=$("messageText").value.trim();
-  const file=$("messageFile").files[0];
-  if(!body && !file) return;
-  try{
-    if(body){
-      const {error}=await sb.from("report_messages").insert({report_id:selectedReportId,body,sender_role:"user"});
-      if(error) throw error;
-    }
-    if(file){
-      const safe=validateFile(file,50); if(!safe.ok) throw new Error(safe.message);
-      await uploadPrivateAttachment("message",selectedReportId,file);
-    }
-    $("messageText").value=""; $("messageFile").value="";
-    await loadMessages();
-  }catch(err){toast(err.message||"Message failed.");}
-});
-
-/* ---------- FILES ---------- */
-function validateFile(file,maxMB){
-  const allowed=[
-    "image/jpeg","image/png","image/webp","image/gif",
-    "audio/webm","audio/ogg","audio/mpeg","audio/wav",
-    "video/webm","video/mp4","application/pdf",
-    "text/plain","application/msword",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-  ];
-  if(file.size>maxMB*1024*1024) return {ok:false,message:`File is larger than ${maxMB} MB.`};
-  if(!allowed.includes(file.type)) return {ok:false,message:"This file type is not allowed."};
-  return {ok:true,name:file.name.replace(/[^a-zA-Z0-9._-]/g,"_")};
-}
-async function uploadPrivateAttachment(kind,parentId,file){
-  const safe=validateFile(file,50); if(!safe.ok) throw new Error(safe.message);
-  const path=`${currentUser.id}/${kind}/${parentId}/${crypto.randomUUID()}-${safe.name}`;
-  const {error}=await sb.storage.from("private-files").upload(path,file,{contentType:file.type||"application/octet-stream",upsert:false});
-  if(error) throw error;
-  const {error:dbError}=await sb.from("private_attachments").insert({report_id:kind==="report"?parentId:selectedReportId,storage_path:path,file_name:file.name,mime_type:file.type,file_size:file.size});
-  if(dbError) throw dbError;
 }
 
-/* ---------- RECORDER ---------- */
-async function startRecorder(kind){
-  if(!currentUser){openAuth();return;}
-  recorderKind=kind; recorderChunks=[];
-  openModal("recorderModal");
-  $("recorderTitle").textContent=kind==="video"?"Video Note Recorder":"Voice Note Recorder";
-  $("recordStatus").textContent="Requesting device permission...";
-  try{
-    recorderStream=await navigator.mediaDevices.getUserMedia(kind==="video"?{audio:true,video:true}:{audio:true});
-    $("recorderPreview").srcObject=recorderStream;
-    $("recorderPreview").muted=kind!=="video";
-    $("recorderPreview").style.display=kind==="video"?"block":"none";
-    $("recordStatus").textContent="Permission granted. Press Start.";
-  }catch(err){ $("recordStatus").textContent="Microphone/camera permission was denied or unavailable."; }
-}
-function beginRecording(){
-  if(!recorderStream)return;
-  recorderChunks=[];
-  recorder=new MediaRecorder(recorderStream);
-  recorder.ondataavailable=e=>{if(e.data.size)recorderChunks.push(e.data)};
-  recorder.onstop=async()=>{
-    const blob=new Blob(recorderChunks,{type:recorder.mimeType|| (recorderKind==="video"?"video/webm":"audio/webm")});
-    const file=new File([blob],`${recorderKind}-note-${Date.now()}.webm`,{type:blob.type});
-    pendingAttachments.push(file);
-    $("attachmentPreview").textContent=`${file.name} (${Math.round(file.size/1024)} KB)`;
-    $("recordStatus").textContent="Recording saved to this report. Submit the report to upload it.";
-  };
-  recorder.start();
-  $("recordStatus").textContent="Recording...";
-}
-function stopRecorder(){
-  if(recorder && recorder.state!=="inactive") recorder.stop();
-  if(recorderStream){recorderStream.getTracks().forEach(t=>t.stop());recorderStream=null;}
-}
 
-/* ---------- QR SCANNER ---------- */
-async function openQR(){
-  openModal("qrModal");
-  try{
-    qrStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false});
-    $("qrVideo").srcObject=qrStream; await $("qrVideo").play();
-    $("qrStatus").textContent="Scanning...";
-    qrTimer=setInterval(scanQR,250);
-  }catch(e){$("qrStatus").textContent="Camera access is unavailable."; }
-}
-function scanQR(){
-  const v=$("qrVideo"),c=$("qrCanvas");
-  if(!v.videoWidth)return;
-  c.width=v.videoWidth;c.height=v.videoHeight;
-  const ctx=c.getContext("2d");ctx.drawImage(v,0,0,c.width,c.height);
-  const img=ctx.getImageData(0,0,c.width,c.height);
-  const code=window.jsQR(img.data,img.width,img.height,{inversionAttempts:"dontInvert"});
-  if(code){
-    $("qrStatus").textContent="QR detected.";
-    stopQR();
-    try{
-      const u=new URL(code.data);
-      if(u.protocol!=="https:"){toast("Only secure HTTPS QR destinations are allowed.");return;}
-      window.location.href=u.href;
-    }catch{toast("QR detected, but it is not a valid secure web address.");}
+async function signOut() {
+
+  const { error } =
+    await sb.auth.signOut();
+
+  if (error) {
+
+    toast(
+      error.message,
+      "error"
+    );
+
+    return;
   }
-}
-function stopQR(){
-  if(qrTimer)clearInterval(qrTimer);qrTimer=null;
-  if(qrStream){qrStream.getTracks().forEach(t=>t.stop());qrStream=null;}
-}
 
-/* ---------- PROFILE ---------- */
-async function loadProfile(){
-  const b=$("profileBox");
-  if(!currentUser){b.innerHTML='<p class="text-slate-400">Sign in to view your private profile.</p>';return;}
-  const {data,error}=await sb.from("profiles").select("full_name,registration_number,role,created_at").eq("id",currentUser.id).single();
-  if(error){b.textContent="Profile unavailable.";return;}
-  b.innerHTML=`
-    <div class="grid sm:grid-cols-2 gap-4">
-      <div class="bg-black/20 rounded-2xl p-5"><div class="text-xs text-slate-500">Full Name</div><div class="font-bold mt-1">${escapeHTML(data.full_name)}</div></div>
-      <div class="bg-black/20 rounded-2xl p-5"><div class="text-xs text-slate-500">Registration Number</div><div class="font-bold mt-1">${escapeHTML(data.registration_number)}</div></div>
-      <div class="bg-black/20 rounded-2xl p-5"><div class="text-xs text-slate-500">Account Role</div><div class="font-bold mt-1">${escapeHTML(data.role)}</div></div>
-      <div class="bg-black/20 rounded-2xl p-5"><div class="text-xs text-slate-500">Joined</div><div class="font-bold mt-1">${fmtDate(data.created_at)}</div></div>
-    </div>`;
-}
 
-/* ---------- ADMIN ---------- */
-function adminTab(tab){
-  if(!isAdmin()){toast("Unauthorized.");return;}
-  const c=$("adminContent");
-  if(tab==="reports") loadAdminReports();
-  if(tab==="posts") loadAdminPosts();
-  if(tab==="users") loadAdminUsers();
-  if(tab==="audit") loadAudit();
-}
-async function loadAdminReports(){
-  const {data,error}=await sb.from("admin_reports_view").select("*").order("created_at",{ascending:false});
-  $("adminContent").innerHTML=`<div class="flex justify-between items-center"><h3 class="text-2xl font-black">Private Reports</h3><span class="text-xs text-slate-500">Authorized staff only</span></div>`+
-    (error?`<p class="text-red-300 mt-5">${escapeHTML(error.message)}</p>`:
-    `<div class="space-y-3 mt-5">${data.map(r=>`
-      <div class="bg-black/20 rounded-2xl p-4">
-        <div class="flex justify-between gap-3"><b>${escapeHTML(r.case_code)}</b><span class="text-xs">${escapeHTML(r.status)}</span></div>
-        <div class="font-semibold mt-2">${escapeHTML(r.subject)}</div>
-        <div class="text-xs text-slate-500 mt-1">Created ${fmtDate(r.created_at)}</div>
-        <div class="flex flex-wrap gap-2 mt-4">
-          <button onclick="adminOpenCase('${r.id}')" class="px-3 py-2 rounded-xl bg-accent text-ink text-sm font-bold">Open Case</button>
-          <select onchange="adminSetStatus('${r.id}',this.value)" class="bg-black/20 border border-line rounded-xl px-3 py-2 text-sm">
-            ${["submitted","under_review","in_progress","resolved","closed"].map(s=>`<option ${s===r.status?"selected":""}>${s}</option>`).join("")}
-          </select>
-        </div>
-      </div>`).join("")}</div>`);
-}
-async function adminOpenCase(id){
-  const {data:r}=await sb.from("reports").select("id,case_code,subject,status").eq("id",id).single();
-  if(!r)return;
-  const {data:m}=await sb.from("report_messages").select("id,sender_role,body,created_at").eq("report_id",id).order("created_at");
-  $("adminContent").innerHTML=`
-    <button onclick="loadAdminReports()" class="text-accent text-sm">← Back</button>
-    <h3 class="text-2xl font-black mt-3">${escapeHTML(r.case_code)}</h3>
-    <p class="text-slate-400">${escapeHTML(r.subject)} • ${escapeHTML(r.status)}</p>
-    <div class="mt-5 space-y-3 max-h-[45vh] overflow-y-auto">${(m||[]).map(x=>`<div class="bg-black/20 rounded-2xl p-4"><div class="text-xs text-slate-500">${x.sender_role==="user"?"User":"Admin"} • ${fmtDate(x.created_at)}</div><div class="whitespace-pre-wrap mt-2">${escapeHTML(x.body||"")}</div></div>`).join("")}</div>
-    <form onsubmit="adminReply(event,'${id}')" class="mt-5 flex gap-2"><input id="adminReplyText" required maxlength="5000" class="flex-1 bg-black/20 border border-line rounded-xl px-4 py-3" placeholder="Reply privately to this user..."><button class="px-5 py-3 rounded-xl bg-accent text-ink font-bold">Reply</button></form>`;
-}
-async function adminReply(e,id){
-  e.preventDefault();
-  const body=$("adminReplyText").value.trim(); if(!body)return;
-  const {error}=await sb.from("report_messages").insert({report_id:id,body,sender_role:"admin"});
-  if(error){toast(error.message);return;}
-  await sb.from("reports").update({updated_at:new Date().toISOString()}).eq("id",id);
-  await adminOpenCase(id); toast("Private reply sent.");
-}
-async function adminSetStatus(id,status){
-  const {error}=await sb.from("reports").update({status,updated_at:new Date().toISOString()}).eq("id",id);
-  if(error)toast(error.message); else {toast("Status updated.");loadAdminReports();}
-}
-async function loadAdminPosts(){
-  const {data,error}=await sb.from("public_posts").select("id,body,status,created_at,views,likes_count").order("created_at",{ascending:false}).limit(100);
-  $("adminContent").innerHTML=`<h3 class="text-2xl font-black">Public Posts</h3>`+(error?`<p class="text-red-300 mt-5">${escapeHTML(error.message)}</p>`:
-    `<div class="space-y-3 mt-5">${data.map(p=>`<div class="bg-black/20 rounded-2xl p-4"><div class="flex justify-between"><span>${escapeHTML(p.status)}</span><span class="text-xs text-slate-500">${p.views||0} views • ${p.likes_count||0} likes</span></div><p class="mt-2 whitespace-pre-wrap">${escapeHTML(p.body)}</p><button onclick="adminDeletePost('${p.id}')" class="mt-3 text-sm text-red-300">Delete</button></div>`).join("")}</div>`);
-}
-async function adminDeletePost(id){
-  if(!confirm("Delete this public post?"))return;
-  const {error}=await sb.from("public_posts").update({status:"deleted"}).eq("id",id);
-  if(error)toast(error.message);else{toast("Post deleted.");loadAdminPosts();}
-}
-async function loadAdminUsers(){
-  const {data,error}=await sb.from("profiles").select("id,full_name,registration_number,role,created_at").order("created_at",{ascending:false}).limit(200);
-  $("adminContent").innerHTML=`<h3 class="text-2xl font-black">Users</h3>`+(error?`<p class="text-red-300 mt-5">${escapeHTML(error.message)}</p>`:
-    `<div class="overflow-auto mt-5"><table class="w-full text-sm"><thead><tr class="text-left text-slate-500"><th class="p-3">Name</th><th class="p-3">Reg</th><th class="p-3">Role</th><th class="p-3">Joined</th></tr></thead><tbody>${data.map(u=>`<tr class="border-t border-line"><td class="p-3">${escapeHTML(u.full_name)}</td><td class="p-3">${escapeHTML(u.registration_number)}</td><td class="p-3">${escapeHTML(u.role)}</td><td class="p-3">${fmtDate(u.created_at)}</td></tr>`).join("")}</tbody></table></div>`);
-}
-async function loadAudit(){
-  const {data,error}=await sb.from("audit_logs").select("id,actor_role,action,created_at").order("created_at",{ascending:false}).limit(200);
-  $("adminContent").innerHTML=`<h3 class="text-2xl font-black">Audit Log</h3>`+(error?`<p class="text-red-300 mt-5">${escapeHTML(error.message)}</p>`:
-    `<div class="space-y-2 mt-5">${data.map(x=>`<div class="bg-black/20 rounded-xl p-3 text-sm"><b>${escapeHTML(x.action)}</b> <span class="text-slate-500">• ${escapeHTML(x.actor_role)} • ${fmtDate(x.created_at)}</span></div>`).join("")}</div>`);
-}
+  currentUser = null;
+  currentProfile = null;
 
-/* ---------- BASIC UI SECURITY UX ---------- */
-document.addEventListener("contextmenu",e=>e.preventDefault());
-document.addEventListener("dragstart",e=>e.preventDefault());
-document.addEventListener("keydown",e=>{
-  if((e.ctrlKey||e.metaKey)&&["s","u","p"].includes(e.key.toLowerCase())) e.preventDefault();
-  if(e.key==="PrintScreen") toast("Screen capture controls are handled by your device/operating system; the website cannot guarantee blocking screenshots.");
-});
-document.addEventListener("visibilitychange",()=>{
-  // Do not claim this prevents screenshots/recording. It only hides sensitive UI while the tab is hidden.
-  document.body.style.filter=document.hidden?"blur(8px)":"none";
-});
+  updateAuthUI();
 
-async function initStats(){
-  const [m,p,e]=await Promise.all([
-    sb.from("profiles").select("id",{count:"exact",head:true}),
-    sb.from("public_posts").select("id",{count:"exact",head:true}).eq("status","published"),
-    sb.from("club_events").select("id",{count:"exact",head:true})
-  ]);
-  $("statMembers").textContent=m.count??"—"; $("statPosts").textContent=p.count??"—"; $("statEvents").textContent=e.count??"—";
-}
-
-(async function(){
-  await loadSession();
-  await initStats();
   showPage("home");
+
+  toast(
+    "Signed out successfully.",
+    "success"
+  );
+
+}
+
+
+sb.auth.onAuthStateChange(
+  async (_event, session) => {
+
+    currentUser =
+      session?.user || null;
+
+    if (currentUser) {
+      await loadCurrentProfile();
+    } else {
+      currentProfile = null;
+    }
+
+    updateAuthUI();
+
+  }
+);
+
+
+/* ============================================================
+   PUBLIC FEED
+============================================================ */
+
+async function loadFeed() {
+
+  const box = $("feedList");
+
+  box.innerHTML =
+    '<div class="text-slate-400">Loading posts...</div>';
+
+
+  const {
+    data,
+    error
+  } = await sb
+    .from("public_posts")
+    .select(
+      "id,body,media_url,media_type,created_at,views,likes_count"
+    )
+    .eq("status", "published")
+    .order(
+      "created_at",
+      { ascending: false }
+    )
+    .limit(60);
+
+
+  if (error) {
+
+    console.error(error);
+
+    box.innerHTML =
+      '<div class="text-red-300">Unable to load public feed.</div>';
+
+    return;
+  }
+
+
+  if (!data?.length) {
+
+    box.innerHTML =
+      '<div class="text-slate-400">No public posts yet.</div>';
+
+    return;
+  }
+
+
+  box.innerHTML =
+    data.map(post => `
+
+      <article class="glass rounded-3xl overflow-hidden">
+
+        ${
+          post.media_url
+            ? renderMedia(
+                post.media_url,
+                post.media_type
+              )
+            : ""
+        }
+
+        <div class="p-5">
+
+          <div class="flex items-center gap-3">
+
+            <div class="w-10 h-10 rounded-full
+              bg-gradient-to-br from-accent/40 to-gold/40
+              grid place-items-center">
+              🤖
+            </div>
+
+            <div>
+
+              <b>RP Community Bot</b>
+
+              <div class="text-xs text-slate-500">
+                ${fmtDate(post.created_at)}
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <p class="text-slate-200 whitespace-pre-wrap mt-4">
+            ${escapeHTML(post.body)}
+          </p>
+
+
+          <div class="flex items-center gap-5 mt-5
+            text-sm text-slate-400">
+
+            <button
+              onclick="likePost('${post.id}')"
+              class="hover:text-accent">
+              ♥
+              <span>${post.likes_count || 0}</span>
+            </button>
+
+            <button
+              onclick="registerView('${post.id}')"
+              class="hover:text-accent">
+              ◉ ${post.views || 0} views
+            </button>
+
+          </div>
+
+        </div>
+
+      </article>
+
+    `).join("");
+
+}
+
+
+function renderMedia(url, type) {
+
+  if (type?.startsWith("image")) {
+
+    return `
+      <img
+        src="${escapeHTML(url)}"
+        class="w-full max-h-72 object-cover no-select"
+        alt="Community media"
+        draggable="false">
+    `;
+
+  }
+
+
+  if (type?.startsWith("video")) {
+
+    return `
+      <video
+        src="${escapeHTML(url)}"
+        controls
+        controlsList="nodownload"
+        class="w-full max-h-80 bg-black no-select">
+      </video>
+    `;
+
+  }
+
+
+  if (type?.startsWith("audio")) {
+
+    return `
+      <audio
+        src="${escapeHTML(url)}"
+        controls
+        controlsList="nodownload"
+        class="w-full mt-3">
+      </audio>
+    `;
+
+  }
+
+
+  return `
+    <div class="p-5 text-slate-400">
+      Attachment available
+    </div>
+  `;
+
+}
+
+
+async function likePost(id) {
+
+  if (!currentUser) {
+
+    openAuth();
+
+    return;
+  }
+
+
+  const {
+    error
+  } = await sb.rpc(
+    "like_public_post",
+    {
+      post_id: id
+    }
+  );
+
+
+  if (error) {
+
+    toast(
+      error.message ||
+      "Like could not be added.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  toast(
+    "Like added.",
+    "success"
+  );
+
+  loadFeed();
+
+}
+
+
+async function registerView(id) {
+
+  const { error } =
+    await sb.rpc(
+      "register_public_view",
+      {
+        post_id: id
+      }
+    );
+
+  if (error) {
+    console.error(error);
+  }
+
+}
+
+
+/* ============================================================
+   PUBLIC POSTS
+============================================================ */
+
+async function openPostModal() {
+
+  $("postBody").value = "";
+  $("postFile").value = "";
+
+  openModal("postModal");
+
+}
+
+
+$("postForm").addEventListener(
+  "submit",
+  async e => {
+
+    e.preventDefault();
+
+    if (!currentUser) {
+      openAuth();
+      return;
+    }
+
+
+    try {
+
+      const body =
+        $("postBody").value.trim();
+
+      if (!body) {
+        throw new Error(
+          "Post text is required."
+        );
+      }
+
+
+      let media_url = null;
+      let media_type = null;
+
+
+      const file =
+        $("postFile").files[0];
+
+
+      if (file) {
+
+        const safe =
+          validateFile(file, 25);
+
+        if (!safe.ok) {
+          throw new Error(
+            safe.message
+          );
+        }
+
+
+        const path =
+          `${currentUser.id}/${crypto.randomUUID()}-${safe.name}`;
+
+
+        const {
+          error: uploadError
+        } = await sb
+          .storage
+          .from("public-media")
+          .upload(
+            path,
+            file,
+            {
+              contentType:
+                file.type ||
+                "application/octet-stream",
+
+              upsert: false
+            }
+          );
+
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
+
+        const {
+          data: publicData
+        } = sb
+          .storage
+          .from("public-media")
+          .getPublicUrl(path);
+
+
+        media_url =
+          publicData.publicUrl;
+
+        media_type =
+          file.type;
+
+      }
+
+
+      const {
+        error
+      } = await sb
+        .from("public_posts")
+        .insert({
+          body,
+          media_url,
+          media_type
+        });
+
+
+      if (error) {
+        throw error;
+      }
+
+
+      closeModal("postModal");
+
+      toast(
+        "Post published successfully.",
+        "success"
+      );
+
+      loadFeed();
+
+    }
+
+    catch (err) {
+
+      console.error(err);
+
+      toast(
+        err.message ||
+        "Could not publish post.",
+        "error"
+      );
+
+    }
+
+  }
+);
+
+
+/* ============================================================
+   REPORT FILES
+============================================================ */
+
+$("reportFile").addEventListener(
+  "change",
+  e => {
+
+    const files =
+      [...e.target.files];
+
+    pendingAttachments = files;
+
+    $("attachmentPreview").textContent =
+      files.length
+        ? files
+            .map(
+              f =>
+                `${f.name} (${Math.round(
+                  f.size / 1024
+                )} KB)`
+            )
+            .join(" • ")
+        : "";
+
+  }
+);
+
+
+/* ============================================================
+   SECURE REPORT
+============================================================ */
+
+$("reportForm").addEventListener(
+  "submit",
+  async e => {
+
+    e.preventDefault();
+
+
+    if (!currentUser) {
+      openAuth();
+      return;
+    }
+
+
+    try {
+
+      const subject =
+        $("reportSubject").value.trim();
+
+      const body =
+        $("reportBody").value.trim();
+
+
+      if (!subject || !body) {
+
+        throw new Error(
+          "Subject and description are required."
+        );
+
+      }
+
+
+      /*
+        reporter_id is explicitly included.
+        This helps RLS policies that require
+        reporter_id = auth.uid().
+      */
+
+      const {
+        data: report,
+        error
+      } = await sb
+        .from("reports")
+        .insert({
+          reporter_id: currentUser.id,
+          subject,
+          initial_body: body
+        })
+        .select(
+          "id,case_code"
+        )
+        .single();
+
+
+      if (error) {
+        throw error;
+      }
+
+
+      for (const file of pendingAttachments) {
+
+        const safe =
+          validateFile(file, 50);
+
+        if (!safe.ok) {
+          throw new Error(
+            safe.message
+          );
+        }
+
+        await uploadPrivateAttachment(
+          "report",
+          report.id,
+          file
+        );
+
+      }
+
+
+      pendingAttachments = [];
+
+
+      $("reportForm").reset();
+
+      $("attachmentPreview").textContent =
+        "";
+
+
+      toast(
+        `Report submitted. Case ID: ${report.case_code}`,
+        "success"
+      );
+
+
+      showPage("messages");
+
+    }
+
+    catch (err) {
+
+      console.error(err);
+
+      toast(
+        err.message ||
+        "Report submission failed.",
+        "error"
+      );
+
+    }
+
+  }
+);
+
+
+/* ============================================================
+   MY REPORTS
+============================================================ */
+
+async function loadMyReports() {
+
+  if (!currentUser) {
+
+    $("myReports").innerHTML =
+      '<div class="text-slate-400">Sign in to view your private cases.</div>';
+
+    return;
+  }
+
+
+  const {
+    data,
+    error
+  } = await sb
+    .from("reports")
+    .select(
+      "id,case_code,subject,status,created_at,updated_at"
+    )
+    .order(
+      "created_at",
+      { ascending: false }
+    );
+
+
+  if (error) {
+
+    console.error(error);
+
+    $("myReports").innerHTML =
+      '<div class="text-red-300">Could not load cases.</div>';
+
+    return;
+  }
+
+
+  $("myReports").innerHTML =
+    data?.length
+
+      ? data.map(report => `
+
+          <button
+            onclick="openConversation('${report.id}')"
+            class="w-full text-left glass rounded-2xl p-4 hover:bg-white/5">
+
+            <div class="flex justify-between gap-4">
+
+              <b>
+                ${escapeHTML(report.case_code)}
+              </b>
+
+              <span class="text-xs px-2 py-1 rounded-lg bg-white/5">
+                ${escapeHTML(report.status)}
+              </span>
+
+            </div>
+
+            <div class="font-semibold mt-2">
+              ${escapeHTML(report.subject)}
+            </div>
+
+            <div class="text-xs text-slate-500 mt-1">
+              ${fmtDate(
+                report.updated_at ||
+                report.created_at
+              )}
+            </div>
+
+          </button>
+
+        `).join("")
+
+      : '<div class="text-slate-400">No cases yet.</div>';
+
+}
+
+
+/* ============================================================
+   PRIVATE CONVERSATION
+============================================================ */
+
+async function openConversation(id) {
+
+  if (!currentUser) {
+    openAuth();
+    return;
+  }
+
+
+  selectedReportId = id;
+
+
+  const {
+    data: report,
+    error
+  } = await sb
+    .from("reports")
+    .select(
+      "id,case_code,subject,status"
+    )
+    .eq("id", id)
+    .single();
+
+
+  if (error || !report) {
+
+    toast(
+      "Could not open this case.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  $("conversationTitle").textContent =
+    `${report.case_code} — ${report.subject}`;
+
+  $("conversationStatus").textContent =
+    `Status: ${report.status}`;
+
+
+  $("conversation")
+    .classList.remove("hidden");
+
+
+  await loadMessages();
+
+}
+
+
+function closeConversation() {
+
+  selectedReportId = null;
+
+  $("conversation")
+    .classList.add("hidden");
+
+}
+
+
+async function loadMessages() {
+
+  if (!selectedReportId) {
+    return;
+  }
+
+
+  const {
+    data,
+    error
+  } = await sb
+    .from("report_messages")
+    .select(
+      "id,sender_role,body,created_at"
+    )
+    .eq(
+      "report_id",
+      selectedReportId
+    )
+    .order(
+      "created_at",
+      { ascending: true }
+    );
+
+
+  if (error) {
+
+    console.error(error);
+
+    toast(
+      "Could not load messages.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  $("messageList").innerHTML =
+    (data || []).map(message => `
+
+      <div class="${
+        message.sender_role === "user"
+          ? "text-right"
+          : ""
+      }">
+
+        <div class="inline-block max-w-[85%]
+          rounded-2xl px-4 py-3
+          ${
+            message.sender_role === "user"
+              ? "bg-accent/15"
+              : "bg-white/5"
+          }">
+
+          <div class="text-xs text-slate-500 mb-1">
+
+            ${
+              message.sender_role === "user"
+                ? "You"
+                : "Authorized Admin"
+            }
+
+          </div>
+
+          <div class="whitespace-pre-wrap">
+            ${escapeHTML(
+              message.body || "Attachment"
+            )}
+          </div>
+
+          <div class="text-[10px] text-slate-500 mt-2">
+            ${fmtDate(message.created_at)}
+          </div>
+
+        </div>
+
+      </div>
+
+    `).join("");
+
+
+  $("messageList").scrollTop =
+    $("messageList").scrollHeight;
+
+}
+
+
+/* ============================================================
+   SEND PRIVATE MESSAGE
+============================================================ */
+
+$("messageForm").addEventListener(
+  "submit",
+  async e => {
+
+    e.preventDefault();
+
+
+    if (!currentUser) {
+      openAuth();
+      return;
+    }
+
+
+    if (!selectedReportId) {
+      toast(
+        "Select a case first.",
+        "error"
+      );
+      return;
+    }
+
+
+    const body =
+      $("messageText").value.trim();
+
+    const file =
+      $("messageFile").files[0];
+
+
+    if (!body && !file) {
+      return;
+    }
+
+
+    try {
+
+      if (body) {
+
+        const {
+          error
+        } = await sb
+          .from("report_messages")
+          .insert({
+            report_id:
+              selectedReportId,
+
+            sender_id:
+              currentUser.id,
+
+            sender_role:
+              "user",
+
+            body
+          });
+
+
+        if (error) {
+          throw error;
+        }
+
+      }
+
+
+      if (file) {
+
+        const safe =
+          validateFile(file, 50);
+
+        if (!safe.ok) {
+          throw new Error(
+            safe.message
+          );
+        }
+
+
+        await uploadPrivateAttachment(
+          "message",
+          selectedReportId,
+          file
+        );
+
+      }
+
+
+      $("messageText").value = "";
+      $("messageFile").value = "";
+
+
+      await sb
+        .from("reports")
+        .update({
+          updated_at:
+            new Date().toISOString()
+        })
+        .eq(
+          "id",
+          selectedReportId
+        );
+
+
+      await loadMessages();
+
+    }
+
+    catch (err) {
+
+      console.error(err);
+
+      toast(
+        err.message ||
+        "Message failed.",
+        "error"
+      );
+
+    }
+
+  }
+);
+
+
+/* ============================================================
+   FILE VALIDATION
+============================================================ */
+
+function validateFile(file, maxMB) {
+
+  const allowed = [
+
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/gif",
+
+    "audio/webm",
+    "audio/ogg",
+    "audio/mpeg",
+    "audio/wav",
+
+    "video/webm",
+    "video/mp4",
+
+    "application/pdf",
+
+    "text/plain",
+
+    "application/msword",
+
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+  ];
+
+
+  if (
+    file.size >
+    maxMB * 1024 * 1024
+  ) {
+
+    return {
+      ok: false,
+      message:
+        `File is larger than ${maxMB} MB.`
+    };
+
+  }
+
+
+  if (!allowed.includes(file.type)) {
+
+    return {
+      ok: false,
+      message:
+        "This file type is not allowed."
+    };
+
+  }
+
+
+  return {
+    ok: true,
+    name:
+      file.name.replace(
+        /[^a-zA-Z0-9._-]/g,
+        "_"
+      )
+  };
+
+}
+
+
+/* ============================================================
+   PRIVATE FILE UPLOAD
+============================================================ */
+
+async function uploadPrivateAttachment(
+  kind,
+  parentId,
+  file
+) {
+
+  const safe =
+    validateFile(file, 50);
+
+  if (!safe.ok) {
+    throw new Error(
+      safe.message
+    );
+  }
+
+
+  const path =
+    `${currentUser.id}/${kind}/${parentId}/${crypto.randomUUID()}-${safe.name}`;
+
+
+  const {
+    error: uploadError
+  } = await sb
+    .storage
+    .from("private-files")
+    .upload(
+      path,
+      file,
+      {
+        contentType:
+          file.type ||
+          "application/octet-stream",
+
+        upsert: false
+      }
+    );
+
+
+  if (uploadError) {
+    throw uploadError;
+  }
+
+
+  const {
+    error: dbError
+  } = await sb
+    .from("private_attachments")
+    .insert({
+
+      report_id:
+        kind === "report"
+          ? parentId
+          : selectedReportId,
+
+      storage_path:
+        path,
+
+      file_name:
+        file.name,
+
+      mime_type:
+        file.type,
+
+      file_size:
+        file.size
+
+    });
+
+
+  if (dbError) {
+    throw dbError;
+  }
+
+}
+
+
+/* ============================================================
+   RECORDER
+============================================================ */
+
+async function startRecorder(kind) {
+
+  if (!currentUser) {
+    openAuth();
+    return;
+  }
+
+
+  recorderKind = kind;
+  recorderChunks = [];
+
+
+  openModal("recorderModal");
+
+
+  $("recorderTitle").textContent =
+    kind === "video"
+      ? "Video Note Recorder"
+      : "Voice Note Recorder";
+
+
+  $("recordStatus").textContent =
+    "Requesting device permission...";
+
+
+  try {
+
+    recorderStream =
+      await navigator.mediaDevices.getUserMedia(
+        kind === "video"
+          ? {
+              audio: true,
+              video: true
+            }
+          : {
+              audio: true
+            }
+      );
+
+
+    $("recorderPreview").srcObject =
+      recorderStream;
+
+
+    $("recorderPreview").muted =
+      kind !== "video";
+
+
+    $("recorderPreview").style.display =
+      kind === "video"
+        ? "block"
+        : "none";
+
+
+    $("recordStatus").textContent =
+      "Permission granted. Press Start.";
+
+  }
+
+  catch (err) {
+
+    console.error(err);
+
+    $("recordStatus").textContent =
+      "Microphone/camera permission was denied or unavailable.";
+
+  }
+
+}
+
+
+function beginRecording() {
+
+  if (!recorderStream) {
+    return;
+  }
+
+
+  recorderChunks = [];
+
+
+  const options =
+    MediaRecorder.isTypeSupported(
+      "video/webm;codecs=vp9,opus"
+    )
+      ? {
+          mimeType:
+            "video/webm;codecs=vp9,opus"
+        }
+      : {};
+
+
+  try {
+
+    recorder =
+      new MediaRecorder(
+        recorderStream,
+        options
+      );
+
+  }
+
+  catch (err) {
+
+    recorder =
+      new MediaRecorder(
+        recorderStream
+      );
+
+  }
+
+
+  recorder.ondataavailable =
+    event => {
+
+      if (event.data.size) {
+        recorderChunks.push(
+          event.data
+        );
+      }
+
+    };
+
+
+  recorder.onstop =
+    async () => {
+
+      const mimeType =
+        recorder.mimeType ||
+        (
+          recorderKind === "video"
+            ? "video/webm"
+            : "audio/webm"
+        );
+
+
+      const blob =
+        new Blob(
+          recorderChunks,
+          {
+            type: mimeType
+          }
+        );
+
+
+      const file =
+        new File(
+          [blob],
+          `${recorderKind}-note-${Date.now()}.webm`,
+          {
+            type: mimeType
+          }
+        );
+
+
+      pendingAttachments.push(file);
+
+
+      $("attachmentPreview").textContent =
+        `${file.name} (${Math.round(
+          file.size / 1024
+        )} KB)`;
+
+
+      $("recordStatus").textContent =
+        "Recording saved to this report. Submit the report to upload it.";
+
+    };
+
+
+  recorder.start();
+
+
+  $("recordStatus").textContent =
+    "Recording...";
+
+}
+
+
+function stopRecorder() {
+
+  if (
+    recorder &&
+    recorder.state !== "inactive"
+  ) {
+
+    recorder.stop();
+
+  }
+
+
+  if (recorderStream) {
+
+    recorderStream
+      .getTracks()
+      .forEach(track =>
+        track.stop()
+      );
+
+    recorderStream = null;
+
+  }
+
+}
+
+
+/* ============================================================
+   QR SCANNER
+============================================================ */
+
+async function openQR() {
+
+  openModal("qrModal");
+
+
+  try {
+
+    qrStream =
+      await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: {
+            ideal: "environment"
+          }
+        },
+        audio: false
+      });
+
+
+    $("qrVideo").srcObject =
+      qrStream;
+
+
+    await $("qrVideo").play();
+
+
+    $("qrStatus").textContent =
+      "Scanning...";
+
+
+    qrTimer =
+      setInterval(
+        scanQR,
+        250
+      );
+
+  }
+
+  catch (e) {
+
+    console.error(e);
+
+    $("qrStatus").textContent =
+      "Camera access is unavailable.";
+
+  }
+
+}
+
+
+function scanQR() {
+
+  const video =
+    $("qrVideo");
+
+  const canvas =
+    $("qrCanvas");
+
+
+  if (!video.videoWidth) {
+    return;
+  }
+
+
+  canvas.width =
+    video.videoWidth;
+
+  canvas.height =
+    video.videoHeight;
+
+
+  const ctx =
+    canvas.getContext("2d");
+
+
+  ctx.drawImage(
+    video,
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+
+
+  const image =
+    ctx.getImageData(
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+
+  const code =
+    window.jsQR(
+      image.data,
+      image.width,
+      image.height,
+      {
+        inversionAttempts:
+          "dontInvert"
+      }
+    );
+
+
+  if (!code) {
+    return;
+  }
+
+
+  $("qrStatus").textContent =
+    "QR detected.";
+
+
+  stopQR();
+
+
+  try {
+
+    const url =
+      new URL(code.data);
+
+
+    if (
+      url.protocol !== "https:"
+    ) {
+
+      toast(
+        "Only secure HTTPS QR destinations are allowed.",
+        "error"
+      );
+
+      return;
+    }
+
+
+    window.location.href =
+      url.href;
+
+  }
+
+  catch {
+
+    toast(
+      "QR detected, but it is not a valid secure web address.",
+      "error"
+    );
+
+  }
+
+}
+
+
+function stopQR() {
+
+  if (qrTimer) {
+
+    clearInterval(qrTimer);
+
+    qrTimer = null;
+
+  }
+
+
+  if (qrStream) {
+
+    qrStream
+      .getTracks()
+      .forEach(track =>
+        track.stop()
+      );
+
+    qrStream = null;
+
+  }
+
+}
+
+
+/* ============================================================
+   PROFILE
+============================================================ */
+
+async function loadProfile() {
+
+  const box =
+    $("profileBox");
+
+
+  if (!currentUser) {
+
+    box.innerHTML =
+      '<p class="text-slate-400">Sign in to view your private profile.</p>';
+
+    return;
+  }
+
+
+  const {
+    data,
+    error
+  } = await sb
+    .from("profiles")
+    .select(
+      "full_name,registration_number,role,created_at"
+    )
+    .eq(
+      "id",
+      currentUser.id
+    )
+    .maybeSingle();
+
+
+  if (error || !data) {
+
+    box.innerHTML =
+      '<p class="text-red-300">Profile unavailable.</p>';
+
+    return;
+  }
+
+
+  box.innerHTML = `
+
+    <div class="grid sm:grid-cols-2 gap-4">
+
+      <div class="bg-black/20 rounded-2xl p-5">
+
+        <div class="text-xs text-slate-500">
+          Full Name
+        </div>
+
+        <div class="font-bold mt-1">
+          ${escapeHTML(data.full_name)}
+        </div>
+
+      </div>
+
+
+      <div class="bg-black/20 rounded-2xl p-5">
+
+        <div class="text-xs text-slate-500">
+          Registration Number
+        </div>
+
+        <div class="font-bold mt-1">
+          ${escapeHTML(data.registration_number)}
+        </div>
+
+      </div>
+
+
+      <div class="bg-black/20 rounded-2xl p-5">
+
+        <div class="text-xs text-slate-500">
+          Account Role
+        </div>
+
+        <div class="font-bold mt-1">
+          ${escapeHTML(data.role)}
+        </div>
+
+      </div>
+
+
+      <div class="bg-black/20 rounded-2xl p-5">
+
+        <div class="text-xs text-slate-500">
+          Joined
+        </div>
+
+        <div class="font-bold mt-1">
+          ${fmtDate(data.created_at)}
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+
+/* ============================================================
+   ADMIN
+============================================================ */
+
+function adminTab(tab) {
+
+  if (!isAdmin()) {
+
+    toast(
+      "Unauthorized.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  if (tab === "reports") {
+    loadAdminReports();
+  }
+
+  if (tab === "posts") {
+    loadAdminPosts();
+  }
+
+  if (tab === "users") {
+    loadAdminUsers();
+  }
+
+  if (tab === "audit") {
+    loadAudit();
+  }
+
+}
+
+
+/* ============================================================
+   ADMIN REPORTS
+============================================================ */
+
+async function loadAdminReports() {
+
+  const {
+    data,
+    error
+  } = await sb
+    .from("admin_reports_view")
+    .select("*")
+    .order(
+      "created_at",
+      { ascending: false }
+    );
+
+
+  $("adminContent").innerHTML = `
+
+    <div class="flex justify-between items-center">
+
+      <h3 class="text-2xl font-black">
+        Private Reports
+      </h3>
+
+      <span class="text-xs text-slate-500">
+        Authorized staff only
+      </span>
+
+    </div>
+
+  `;
+
+
+  if (error) {
+
+    $("adminContent").innerHTML += `
+      <p class="text-red-300 mt-5">
+        ${escapeHTML(error.message)}
+      </p>
+    `;
+
+    return;
+  }
+
+
+  if (!data?.length) {
+
+    $("adminContent").innerHTML += `
+      <p class="text-slate-400 mt-5">
+        No reports found.
+      </p>
+    `;
+
+    return;
+  }
+
+
+  $("adminContent").innerHTML += `
+
+    <div class="space-y-3 mt-5">
+
+      ${data.map(report => `
+
+        <div class="bg-black/20 rounded-2xl p-4">
+
+          <div class="flex justify-between gap-3">
+
+            <b>
+              ${escapeHTML(report.case_code)}
+            </b>
+
+            <span class="text-xs">
+              ${escapeHTML(report.status)}
+            </span>
+
+          </div>
+
+
+          <div class="font-semibold mt-2">
+            ${escapeHTML(report.subject)}
+          </div>
+
+
+          <div class="text-xs text-slate-500 mt-1">
+            Created ${fmtDate(report.created_at)}
+          </div>
+
+
+          <div class="flex flex-wrap gap-2 mt-4">
+
+            <button
+              onclick="adminOpenCase('${report.id}')"
+              class="px-3 py-2 rounded-xl bg-accent text-ink text-sm font-bold">
+              Open Case
+            </button>
+
+
+            <select
+              onchange="adminSetStatus('${report.id}',this.value)"
+              class="bg-black/20 border border-line rounded-xl px-3 py-2 text-sm">
+
+              ${
+                [
+                  "submitted",
+                  "under_review",
+                  "in_progress",
+                  "resolved",
+                  "closed"
+                ]
+                .map(status => `
+                  <option
+                    value="${status}"
+                    ${status === report.status ? "selected" : ""}>
+                    ${status}
+                  </option>
+                `)
+                .join("")
+              }
+
+            </select>
+
+          </div>
+
+        </div>
+
+      `).join("")}
+
+    </div>
+
+  `;
+
+}
+
+
+/* ============================================================
+   ADMIN OPEN CASE
+============================================================ */
+
+async function adminOpenCase(id) {
+
+  const {
+    data: report,
+    error: reportError
+  } = await sb
+    .from("reports")
+    .select(
+      "id,case_code,subject,status"
+    )
+    .eq("id", id)
+    .single();
+
+
+  if (reportError || !report) {
+
+    toast(
+      "Could not open case.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  const {
+    data: messages,
+    error: messageError
+  } = await sb
+    .from("report_messages")
+    .select(
+      "id,sender_role,body,created_at"
+    )
+    .eq(
+      "report_id",
+      id
+    )
+    .order(
+      "created_at",
+      {
+        ascending: true
+      }
+    );
+
+
+  if (messageError) {
+
+    toast(
+      messageError.message,
+      "error"
+    );
+
+    return;
+  }
+
+
+  $("adminContent").innerHTML = `
+
+    <button
+      onclick="loadAdminReports()"
+      class="text-accent text-sm">
+      ← Back
+    </button>
+
+
+    <h3 class="text-2xl font-black mt-3">
+      ${escapeHTML(report.case_code)}
+    </h3>
+
+
+    <p class="text-slate-400">
+      ${escapeHTML(report.subject)}
+      •
+      ${escapeHTML(report.status)}
+    </p>
+
+
+    <div class="mt-5 space-y-3
+      max-h-[45vh]
+      overflow-y-auto">
+
+      ${(messages || []).map(message => `
+
+        <div class="bg-black/20 rounded-2xl p-4">
+
+          <div class="text-xs text-slate-500">
+
+            ${
+              message.sender_role === "user"
+                ? "User"
+                : "Admin"
+            }
+
+            •
+            ${fmtDate(message.created_at)}
+
+          </div>
+
+
+          <div class="whitespace-pre-wrap mt-2">
+            ${escapeHTML(
+              message.body || ""
+            )}
+          </div>
+
+        </div>
+
+      `).join("")}
+
+    </div>
+
+
+    <form
+      onsubmit="adminReply(event,'${id}')"
+      class="mt-5 flex gap-2">
+
+      <input
+        id="adminReplyText"
+        required
+        maxlength="5000"
+        class="flex-1 bg-black/20 border border-line rounded-xl px-4 py-3"
+        placeholder="Reply privately to this user...">
+
+      <button
+        class="px-5 py-3 rounded-xl bg-accent text-ink font-bold">
+        Reply
+      </button>
+
+    </form>
+
+  `;
+
+}
+
+
+/* ============================================================
+   ADMIN REPLY
+============================================================ */
+
+async function adminReply(e, id) {
+
+  e.preventDefault();
+
+
+  if (!currentUser) {
+    openAuth();
+    return;
+  }
+
+
+  const body =
+    $("adminReplyText").value.trim();
+
+
+  if (!body) {
+    return;
+  }
+
+
+  const {
+    error
+  } = await sb
+    .from("report_messages")
+    .insert({
+
+      report_id:
+        id,
+
+      sender_id:
+        currentUser.id,
+
+      sender_role:
+        "admin",
+
+      body
+
+    });
+
+
+  if (error) {
+
+    toast(
+      error.message,
+      "error"
+    );
+
+    return;
+  }
+
+
+  await sb
+    .from("reports")
+    .update({
+      updated_at:
+        new Date().toISOString()
+    })
+    .eq(
+      "id",
+      id
+    );
+
+
+  await adminOpenCase(id);
+
+
+  toast(
+    "Private reply sent.",
+    "success"
+  );
+
+}
+
+
+/* ============================================================
+   ADMIN STATUS
+============================================================ */
+
+async function adminSetStatus(
+  id,
+  status
+) {
+
+  const {
+    error
+  } = await sb
+    .from("reports")
+    .update({
+
+      status,
+
+      updated_at:
+        new Date().toISOString()
+
+    })
+    .eq(
+      "id",
+      id
+    );
+
+
+  if (error) {
+
+    toast(
+      error.message,
+      "error"
+    );
+
+  }
+
+  else {
+
+    toast(
+      "Status updated.",
+      "success"
+    );
+
+    loadAdminReports();
+
+  }
+
+}
+
+
+/* ============================================================
+   ADMIN POSTS
+============================================================ */
+
+async function loadAdminPosts() {
+
+  const {
+    data,
+    error
+  } = await sb
+    .from("public_posts")
+    .select(
+      "id,body,status,created_at,views,likes_count"
+    )
+    .order(
+      "created_at",
+      {
+        ascending: false
+      }
+    )
+    .limit(100);
+
+
+  $("adminContent").innerHTML = `
+
+    <h3 class="text-2xl font-black">
+      Public Posts
+    </h3>
+
+  `;
+
+
+  if (error) {
+
+    $("adminContent").innerHTML += `
+      <p class="text-red-300 mt-5">
+        ${escapeHTML(error.message)}
+      </p>
+    `;
+
+    return;
+  }
+
+
+  $("adminContent").innerHTML += `
+
+    <div class="space-y-3 mt-5">
+
+      ${(data || []).map(post => `
+
+        <div class="bg-black/20 rounded-2xl p-4">
+
+          <div class="flex justify-between">
+
+            <span>
+              ${escapeHTML(post.status)}
+            </span>
+
+            <span class="text-xs text-slate-500">
+              ${post.views || 0} views
+              •
+              ${post.likes_count || 0} likes
+            </span>
+
+          </div>
+
+
+          <p class="mt-2 whitespace-pre-wrap">
+            ${escapeHTML(post.body)}
+          </p>
+
+
+          <button
+            onclick="adminDeletePost('${post.id}')"
+            class="mt-3 text-sm text-red-300">
+            Delete
+          </button>
+
+        </div>
+
+      `).join("")}
+
+    </div>
+
+  `;
+
+}
+
+
+/* ============================================================
+   DELETE POST
+============================================================ */
+
+async function adminDeletePost(id) {
+
+  if (
+    !confirm(
+      "Delete this public post?"
+    )
+  ) {
+    return;
+  }
+
+
+  const {
+    error
+  } = await sb
+    .from("public_posts")
+    .update({
+      status: "deleted"
+    })
+    .eq(
+      "id",
+      id
+    );
+
+
+  if (error) {
+
+    toast(
+      error.message,
+      "error"
+    );
+
+  }
+
+  else {
+
+    toast(
+      "Post deleted.",
+      "success"
+    );
+
+    loadAdminPosts();
+
+  }
+
+}
+
+
+/* ============================================================
+   ADMIN USERS
+============================================================ */
+
+async function loadAdminUsers() {
+
+  const {
+    data,
+    error
+  } = await sb
+    .from("profiles")
+    .select(
+      "id,full_name,registration_number,role,created_at"
+    )
+    .order(
+      "created_at",
+      {
+        ascending: false
+      }
+    )
+    .limit(200);
+
+
+  $("adminContent").innerHTML = `
+
+    <h3 class="text-2xl font-black">
+      Users
+    </h3>
+
+  `;
+
+
+  if (error) {
+
+    $("adminContent").innerHTML += `
+      <p class="text-red-300 mt-5">
+        ${escapeHTML(error.message)}
+      </p>
+    `;
+
+    return;
+  }
+
+
+  $("adminContent").innerHTML += `
+
+    <div class="overflow-auto mt-5">
+
+      <table class="w-full text-sm">
+
+        <thead>
+
+          <tr class="text-left text-slate-500">
+
+            <th class="p-3">
+              Name
+            </th>
+
+            <th class="p-3">
+              Reg
+            </th>
+
+            <th class="p-3">
+              Role
+            </th>
+
+            <th class="p-3">
+              Joined
+            </th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          ${(data || []).map(user => `
+
+            <tr class="border-t border-line">
+
+              <td class="p-3">
+                ${escapeHTML(user.full_name)}
+              </td>
+
+              <td class="p-3">
+                ${escapeHTML(user.registration_number)}
+              </td>
+
+              <td class="p-3">
+                ${escapeHTML(user.role)}
+              </td>
+
+              <td class="p-3">
+                ${fmtDate(user.created_at)}
+              </td>
+
+            </tr>
+
+          `).join("")}
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  `;
+
+}
+
+
+/* ============================================================
+   AUDIT LOG
+============================================================ */
+
+async function loadAudit() {
+
+  const {
+    data,
+    error
+  } = await sb
+    .from("audit_logs")
+    .select(
+      "id,actor_role,action,created_at"
+    )
+    .order(
+      "created_at",
+      {
+        ascending: false
+      }
+    )
+    .limit(200);
+
+
+  $("adminContent").innerHTML = `
+
+    <h3 class="text-2xl font-black">
+      Audit Log
+    </h3>
+
+  `;
+
+
+  if (error) {
+
+    $("adminContent").innerHTML += `
+      <p class="text-red-300 mt-5">
+        ${escapeHTML(error.message)}
+      </p>
+    `;
+
+    return;
+  }
+
+
+  $("adminContent").innerHTML += `
+
+    <div class="space-y-2 mt-5">
+
+      ${(data || []).map(item => `
+
+        <div class="bg-black/20 rounded-xl p-3 text-sm">
+
+          <b>
+            ${escapeHTML(item.action)}
+          </b>
+
+          <span class="text-slate-500">
+            •
+            ${escapeHTML(item.actor_role)}
+            •
+            ${fmtDate(item.created_at)}
+          </span>
+
+        </div>
+
+      `).join("")}
+
+    </div>
+
+  `;
+
+}
+
+
+/* ============================================================
+   BASIC UI SECURITY UX
+============================================================ */
+
+document.addEventListener(
+  "contextmenu",
+  e => e.preventDefault()
+);
+
+
+document.addEventListener(
+  "dragstart",
+  e => e.preventDefault()
+);
+
+
+document.addEventListener(
+  "keydown",
+  e => {
+
+    if (
+      (e.ctrlKey || e.metaKey) &&
+      ["s","u","p"].includes(
+        e.key.toLowerCase()
+      )
+    ) {
+
+      e.preventDefault();
+
+    }
+
+
+    if (e.key === "PrintScreen") {
+
+      toast(
+        "Screen capture controls are handled by your device/operating system; the website cannot guarantee blocking screenshots."
+      );
+
+    }
+
+  }
+);
+
+
+document.addEventListener(
+  "visibilitychange",
+  () => {
+
+    document.body.style.filter =
+      document.hidden
+        ? "blur(8px)"
+        : "none";
+
+  }
+);
+
+
+/* ============================================================
+   HOME STATISTICS
+============================================================ */
+
+async function initStats() {
+
+  const [
+    members,
+    posts,
+    events
+  ] = await Promise.all([
+
+    sb
+      .from("profiles")
+      .select(
+        "id",
+        {
+          count: "exact",
+          head: true
+        }
+      ),
+
+    sb
+      .from("public_posts")
+      .select(
+        "id",
+        {
+          count: "exact",
+          head: true
+        }
+      )
+      .eq(
+        "status",
+        "published"
+      ),
+
+    sb
+      .from("club_events")
+      .select(
+        "id",
+        {
+          count: "exact",
+          head: true
+        }
+      )
+
+  ]);
+
+
+  $("statMembers").textContent =
+    members.count ?? "—";
+
+  $("statPosts").textContent =
+    posts.count ?? "—";
+
+  $("statEvents").textContent =
+    events.count ?? "—";
+
+}
+
+
+/* ============================================================
+   START APPLICATION
+============================================================ */
+
+(async function () {
+
+  try {
+
+    await loadSession();
+
+    await initStats();
+
+    showPage("home");
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Application initialization error:",
+      error
+    );
+
+    toast(
+      "Some application data could not be loaded.",
+      "error"
+    );
+
+  }
+
 })();
+
 </script>
+
 </body>
 </html>
