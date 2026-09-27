@@ -1119,7 +1119,7 @@
 /* ============================================================
    RP ANTI-CORRUPTION CLUB
    SUPABASE CONFIGURATION
-   ============================================================ */
+============================================================ */
 
 const SUPABASE_URL =
   "https://gmegddwwtjnkcoonspho.supabase.co";
@@ -1199,19 +1199,31 @@ function toast(message, type = "info") {
 
 
 function closeModal(id) {
+
   const el = $(id);
-  if (el) el.classList.add("hidden");
+
+  if (el) {
+    el.classList.add("hidden");
+  }
+
 }
 
 
 function openModal(id) {
+
   const el = $(id);
-  if (el) el.classList.remove("hidden");
+
+  if (el) {
+    el.classList.remove("hidden");
+  }
+
 }
 
 
 function toggleMobileNav() {
+
   $("mobileNav").classList.toggle("hidden");
+
 }
 
 
@@ -1222,48 +1234,67 @@ function toggleMobileNav() {
 function showPage(name) {
 
   document.querySelectorAll(".page")
-    .forEach(x => x.classList.add("hidden-page"));
+    .forEach(x =>
+      x.classList.add("hidden-page")
+    );
 
-  const page = $("page-" + name);
 
-  if (!page) return;
+  const page =
+    $("page-" + name);
+
+
+  if (!page) {
+    return;
+  }
+
 
   page.classList.remove("hidden-page");
 
+
   document.querySelectorAll(".nav-btn")
     .forEach(btn => {
+
       btn.classList.toggle(
         "bg-white/10",
         btn.dataset.page === name
       );
+
     });
+
 
   if (name === "feed") {
     loadFeed();
   }
 
+
   if (name === "profile") {
     loadProfile();
   }
+
 
   if (name === "messages") {
     loadMyReports();
   }
 
+
   if (name === "admin") {
 
     if (isAdmin()) {
       adminTab("reports");
-    } else {
+    }
+
+    else {
       showPage("home");
     }
 
   }
 
+
   window.scrollTo({
     top: 0,
     behavior: "smooth"
   });
+
 }
 
 
@@ -1290,7 +1321,9 @@ function isAdmin() {
     "content_admin",
     "user_admin",
     "security_admin"
-  ].includes(currentProfile?.role);
+  ].includes(
+    currentProfile?.role
+  );
 
 }
 
@@ -1298,11 +1331,14 @@ function isAdmin() {
 function requireLogin(fn) {
 
   if (!currentUser) {
+
     openAuth();
+
     return;
   }
 
   fn();
+
 }
 
 
@@ -1313,6 +1349,7 @@ function requireLogin(fn) {
 function openAuth() {
 
   setAuthMode("signin");
+
   openModal("authModal");
 
 }
@@ -1322,19 +1359,33 @@ function setAuthMode(mode) {
 
   authMode = mode;
 
+
   $("fullNameWrap")
-    .classList.toggle("hidden", mode !== "signup");
+    .classList.toggle(
+      "hidden",
+      mode !== "signup"
+    );
+
 
   $("retypeWrap")
-    .classList.toggle("hidden", mode !== "signup");
+    .classList.toggle(
+      "hidden",
+      mode !== "signup"
+    );
+
 
   $("forgotBtn")
-    .classList.toggle("hidden", mode !== "signin");
+    .classList.toggle(
+      "hidden",
+      mode !== "signin"
+    );
+
 
   $("authSubmit").textContent =
     mode === "signup"
       ? "Create Account"
       : "Sign In";
+
 
   $("tabSignin")
     .classList.toggle(
@@ -1342,11 +1393,13 @@ function setAuthMode(mode) {
       mode === "signin"
     );
 
+
   $("tabSignup")
     .classList.toggle(
       "bg-white/10",
       mode === "signup"
     );
+
 
   $("authMessage").textContent = "";
 
@@ -1372,7 +1425,10 @@ function syntheticEmail(reg) {
   const clean =
     normalizeReg(reg)
       .toLowerCase()
-      .replace(/[^a-z0-9._-]/g, "");
+      .replace(
+        /[^a-z0-9._-]/g,
+        ""
+      );
 
   return `${clean}@rpac.internal`;
 
@@ -1389,21 +1445,29 @@ $("authForm").addEventListener(
 
     e.preventDefault();
 
+
     $("authMessage").textContent =
       "Working...";
 
+
     const reg =
-      normalizeReg($("regNumber").value);
+      normalizeReg(
+        $("regNumber").value
+      );
+
 
     const password =
       $("password").value;
 
+
     try {
 
       if (!reg) {
+
         throw new Error(
           "Registration number is required."
         );
+
       }
 
 
@@ -1414,90 +1478,120 @@ $("authForm").addEventListener(
         const fullName =
           $("fullName").value.trim();
 
+
         const retype =
           $("retypePassword").value;
 
+
         if (!fullName) {
+
           throw new Error(
             "Full name is required."
           );
+
         }
 
+
         if (password.length < 8) {
+
           throw new Error(
             "Password must be at least 8 characters."
           );
+
         }
 
+
         if (password !== retype) {
+
           throw new Error(
             "Passwords do not match."
           );
+
         }
 
 
-        const { data, error } =
-          await sb.auth.signUp({
+        const {
+          data,
+          error
+        } = await sb.auth.signUp({
 
-            email: syntheticEmail(reg),
+          email:
+            syntheticEmail(reg),
 
-            password,
+          password,
 
-            options: {
-              data: {
-                registration_number: reg,
-                full_name: fullName
-              }
+          options: {
+
+            data: {
+              registration_number: reg,
+              full_name: fullName
             }
 
-          });
+          }
+
+        });
 
 
         if (error) {
           throw error;
         }
 
+
         if (!data?.user) {
+
           throw new Error(
             "Account creation did not return a user."
           );
+
         }
 
 
-        /*
-          If email confirmation is disabled,
-          Supabase normally returns a session.
-        */
-
         if (data.session) {
 
-          currentUser = data.user;
+          currentUser =
+            data.user;
+
 
           await loadCurrentProfile();
 
+
           updateAuthUI();
 
-          closeModal("authModal");
+
+          closeModal(
+            "authModal"
+          );
+
 
           toast(
             "Account created and signed in successfully.",
             "success"
           );
 
+
           showPage("home");
 
-        } else {
+        }
+
+        else {
 
           $("authMessage").textContent =
             "Account created. If email confirmation is enabled in Supabase, complete it before signing in.";
 
+
           setTimeout(() => {
 
-            setAuthMode("signin");
+            setAuthMode(
+              "signin"
+            );
 
-            $("regNumber").value = reg;
 
-            $("password").value = "";
+            $("regNumber").value =
+              reg;
+
+
+            $("password").value =
+              "";
 
           }, 1500);
 
@@ -1510,39 +1604,53 @@ $("authForm").addEventListener(
 
       else {
 
-        const { data, error } =
-          await sb.auth.signInWithPassword({
+        const {
+          data,
+          error
+        } = await sb.auth.signInWithPassword({
 
-            email: syntheticEmail(reg),
+          email:
+            syntheticEmail(reg),
 
-            password
+          password
 
-          });
+        });
 
 
         if (error) {
           throw error;
         }
 
+
         if (!data?.user) {
+
           throw new Error(
             "Sign in failed."
           );
+
         }
 
 
-        currentUser = data.user;
+        currentUser =
+          data.user;
+
 
         await loadCurrentProfile();
 
+
         updateAuthUI();
 
-        closeModal("authModal");
+
+        closeModal(
+          "authModal"
+        );
+
 
         toast(
           "Signed in successfully.",
           "success"
         );
+
 
         showPage("home");
 
@@ -1550,9 +1658,11 @@ $("authForm").addEventListener(
 
     }
 
+
     catch (err) {
 
       console.error(err);
+
 
       $("authMessage").textContent =
         err?.message ||
@@ -1583,11 +1693,16 @@ $("forgotForm").addEventListener(
 
     e.preventDefault();
 
+
     const reg =
-      normalizeReg($("forgotReg").value);
+      normalizeReg(
+        $("forgotReg").value
+      );
+
 
     $("forgotMessage").textContent =
       "Checking secure recovery service...";
+
 
     try {
 
@@ -1596,11 +1711,15 @@ $("forgotForm").addEventListener(
           `${SUPABASE_URL}/functions/v1/request-password-reset`,
           {
             method: "POST",
+
             headers: {
-              "Content-Type": "application/json"
+              "Content-Type":
+                "application/json"
             },
+
             body: JSON.stringify({
-              registration_number: reg
+              registration_number:
+                reg
             })
           }
         );
@@ -1608,9 +1727,15 @@ $("forgotForm").addEventListener(
 
       let data = {};
 
+
       try {
-        data = await response.json();
-      } catch (_) {}
+
+        data =
+          await response.json();
+
+      }
+
+      catch (_) {}
 
 
       if (!response.ok) {
@@ -1627,6 +1752,7 @@ $("forgotForm").addEventListener(
         "If the registration number is eligible, recovery instructions have been issued through the configured secure recovery channel.";
 
     }
+
 
     catch (err) {
 
@@ -1651,17 +1777,26 @@ async function loadSession() {
     error
   } = await sb.auth.getSession();
 
+
   if (error) {
+
     console.error(error);
+
     return;
   }
 
+
   currentUser =
-    data.session?.user || null;
+    data.session?.user ||
+    null;
+
 
   if (currentUser) {
+
     await loadCurrentProfile();
+
   }
+
 
   updateAuthUI();
 
@@ -1671,9 +1806,12 @@ async function loadSession() {
 async function loadCurrentProfile() {
 
   if (!currentUser) {
+
     currentProfile = null;
+
     return;
   }
+
 
   const {
     data,
@@ -1681,7 +1819,10 @@ async function loadCurrentProfile() {
   } = await sb
     .from("profiles")
     .select("*")
-    .eq("id", currentUser.id)
+    .eq(
+      "id",
+      currentUser.id
+    )
     .maybeSingle();
 
 
@@ -1692,13 +1833,15 @@ async function loadCurrentProfile() {
       error
     );
 
+
     currentProfile = null;
 
     return;
   }
 
 
-  currentProfile = data || null;
+  currentProfile =
+    data || null;
 
 }
 
@@ -1710,13 +1853,17 @@ function updateAuthUI() {
       ? "Account"
       : "Sign In";
 
-  const admin = isAdmin();
+
+  const admin =
+    isAdmin();
+
 
   $("adminNav")
     .classList.toggle(
       "hidden",
       !admin
     );
+
 
   $("mobileAdminNav")
     .classList.toggle(
@@ -1729,8 +1876,10 @@ function updateAuthUI() {
 
 async function signOut() {
 
-  const { error } =
-    await sb.auth.signOut();
+  const {
+    error
+  } = await sb.auth.signOut();
+
 
   if (error) {
 
@@ -1744,11 +1893,15 @@ async function signOut() {
 
 
   currentUser = null;
+
   currentProfile = null;
+
 
   updateAuthUI();
 
+
   showPage("home");
+
 
   toast(
     "Signed out successfully.",
@@ -1762,13 +1915,22 @@ sb.auth.onAuthStateChange(
   async (_event, session) => {
 
     currentUser =
-      session?.user || null;
+      session?.user ||
+      null;
+
 
     if (currentUser) {
+
       await loadCurrentProfile();
-    } else {
-      currentProfile = null;
+
     }
+
+    else {
+
+      currentProfile = null;
+
+    }
+
 
     updateAuthUI();
 
@@ -1782,7 +1944,9 @@ sb.auth.onAuthStateChange(
 
 async function loadFeed() {
 
-  const box = $("feedList");
+  const box =
+    $("feedList");
+
 
   box.innerHTML =
     '<div class="text-slate-400">Loading posts...</div>';
@@ -1796,10 +1960,15 @@ async function loadFeed() {
     .select(
       "id,body,media_url,media_type,created_at,views,likes_count"
     )
-    .eq("status", "published")
+    .eq(
+      "status",
+      "published"
+    )
     .order(
       "created_at",
-      { ascending: false }
+      {
+        ascending: false
+      }
     )
     .limit(60);
 
@@ -1808,8 +1977,10 @@ async function loadFeed() {
 
     console.error(error);
 
+
     box.innerHTML =
       '<div class="text-red-300">Unable to load public feed.</div>';
+
 
     return;
   }
@@ -1819,6 +1990,7 @@ async function loadFeed() {
 
     box.innerHTML =
       '<div class="text-slate-400">No public posts yet.</div>';
+
 
     return;
   }
@@ -1982,6 +2154,7 @@ async function likePost(id) {
     "success"
   );
 
+
   loadFeed();
 
 }
@@ -1989,13 +2162,15 @@ async function likePost(id) {
 
 async function registerView(id) {
 
-  const { error } =
-    await sb.rpc(
-      "register_public_view",
-      {
-        post_id: id
-      }
-    );
+  const {
+    error
+  } = await sb.rpc(
+    "register_public_view",
+    {
+      post_id: id
+    }
+  );
+
 
   if (error) {
     console.error(error);
@@ -2011,6 +2186,7 @@ async function registerView(id) {
 async function openPostModal() {
 
   $("postBody").value = "";
+
   $("postFile").value = "";
 
   openModal("postModal");
@@ -2024,8 +2200,11 @@ $("postForm").addEventListener(
 
     e.preventDefault();
 
+
     if (!currentUser) {
+
       openAuth();
+
       return;
     }
 
@@ -2035,14 +2214,18 @@ $("postForm").addEventListener(
       const body =
         $("postBody").value.trim();
 
+
       if (!body) {
+
         throw new Error(
           "Post text is required."
         );
+
       }
 
 
       let media_url = null;
+
       let media_type = null;
 
 
@@ -2053,12 +2236,18 @@ $("postForm").addEventListener(
       if (file) {
 
         const safe =
-          validateFile(file, 25);
+          validateFile(
+            file,
+            25
+          );
+
 
         if (!safe.ok) {
+
           throw new Error(
             safe.message
           );
+
         }
 
 
@@ -2100,6 +2289,7 @@ $("postForm").addEventListener(
         media_url =
           publicData.publicUrl;
 
+
         media_type =
           file.type;
 
@@ -2122,20 +2312,26 @@ $("postForm").addEventListener(
       }
 
 
-      closeModal("postModal");
+      closeModal(
+        "postModal"
+      );
+
 
       toast(
         "Post published successfully.",
         "success"
       );
 
+
       loadFeed();
 
     }
 
+
     catch (err) {
 
       console.error(err);
+
 
       toast(
         err.message ||
@@ -2160,7 +2356,10 @@ $("reportFile").addEventListener(
     const files =
       [...e.target.files];
 
-    pendingAttachments = files;
+
+    pendingAttachments =
+      files;
+
 
     $("attachmentPreview").textContent =
       files.length
@@ -2180,6 +2379,7 @@ $("reportFile").addEventListener(
 
 /* ============================================================
    SECURE REPORT
+   FIXED: NO case_code
 ============================================================ */
 
 $("reportForm").addEventListener(
@@ -2190,7 +2390,9 @@ $("reportForm").addEventListener(
 
 
     if (!currentUser) {
+
       openAuth();
+
       return;
     }
 
@@ -2199,6 +2401,7 @@ $("reportForm").addEventListener(
 
       const subject =
         $("reportSubject").value.trim();
+
 
       const body =
         $("reportBody").value.trim();
@@ -2214,9 +2417,9 @@ $("reportForm").addEventListener(
 
 
       /*
-        reporter_id is explicitly included.
-        This helps RLS policies that require
-        reporter_id = auth.uid().
+        IMPORTANT:
+        The reports table does not contain case_code.
+        We therefore select only the real id column.
       */
 
       const {
@@ -2225,13 +2428,17 @@ $("reportForm").addEventListener(
       } = await sb
         .from("reports")
         .insert({
-          reporter_id: currentUser.id,
+
+          reporter_id:
+            currentUser.id,
+
           subject,
-          initial_body: body
+
+          initial_body:
+            body
+
         })
-        .select(
-          "id,case_code"
-        )
+        .select("id")
         .single();
 
 
@@ -2240,16 +2447,38 @@ $("reportForm").addEventListener(
       }
 
 
-      for (const file of pendingAttachments) {
+      if (!report?.id) {
+
+        throw new Error(
+          "Report was created but no Case ID was returned."
+        );
+
+      }
+
+
+      /*
+        Upload report attachments
+      */
+
+      for (
+        const file of pendingAttachments
+      ) {
 
         const safe =
-          validateFile(file, 50);
+          validateFile(
+            file,
+            50
+          );
+
 
         if (!safe.ok) {
+
           throw new Error(
             safe.message
           );
+
         }
+
 
         await uploadPrivateAttachment(
           "report",
@@ -2265,12 +2494,18 @@ $("reportForm").addEventListener(
 
       $("reportForm").reset();
 
+
       $("attachmentPreview").textContent =
         "";
 
 
+      /*
+        FIX:
+        Use report.id instead of report.case_code
+      */
+
       toast(
-        `Report submitted. Case ID: ${report.case_code}`,
+        `Report submitted. Case ID: ${report.id}`,
         "success"
       );
 
@@ -2279,9 +2514,11 @@ $("reportForm").addEventListener(
 
     }
 
+
     catch (err) {
 
       console.error(err);
+
 
       toast(
         err.message ||
@@ -2297,6 +2534,7 @@ $("reportForm").addEventListener(
 
 /* ============================================================
    MY REPORTS
+   FIXED: NO case_code
 ============================================================ */
 
 async function loadMyReports() {
@@ -2316,11 +2554,13 @@ async function loadMyReports() {
   } = await sb
     .from("reports")
     .select(
-      "id,case_code,subject,status,created_at,updated_at"
+      "id,subject,status,created_at,updated_at"
     )
     .order(
       "created_at",
-      { ascending: false }
+      {
+        ascending: false
+      }
     );
 
 
@@ -2328,8 +2568,10 @@ async function loadMyReports() {
 
     console.error(error);
 
+
     $("myReports").innerHTML =
       '<div class="text-red-300">Could not load cases.</div>';
+
 
     return;
   }
@@ -2347,18 +2589,20 @@ async function loadMyReports() {
             <div class="flex justify-between gap-4">
 
               <b>
-                ${escapeHTML(report.case_code)}
+                Case #${escapeHTML(report.id)}
               </b>
 
               <span class="text-xs px-2 py-1 rounded-lg bg-white/5">
-                ${escapeHTML(report.status)}
+                ${escapeHTML(report.status || "submitted")}
               </span>
 
             </div>
 
+
             <div class="font-semibold mt-2">
               ${escapeHTML(report.subject)}
             </div>
+
 
             <div class="text-xs text-slate-500 mt-1">
               ${fmtDate(
@@ -2378,17 +2622,21 @@ async function loadMyReports() {
 
 /* ============================================================
    PRIVATE CONVERSATION
+   FIXED: NO case_code
 ============================================================ */
 
 async function openConversation(id) {
 
   if (!currentUser) {
+
     openAuth();
+
     return;
   }
 
 
-  selectedReportId = id;
+  selectedReportId =
+    id;
 
 
   const {
@@ -2397,25 +2645,33 @@ async function openConversation(id) {
   } = await sb
     .from("reports")
     .select(
-      "id,case_code,subject,status"
+      "id,subject,status"
     )
-    .eq("id", id)
+    .eq(
+      "id",
+      id
+    )
     .single();
 
 
   if (error || !report) {
+
+    console.error(error);
+
 
     toast(
       "Could not open this case.",
       "error"
     );
 
+
     return;
   }
 
 
   $("conversationTitle").textContent =
-    `${report.case_code} — ${report.subject}`;
+    `Case #${report.id} — ${report.subject}`;
+
 
   $("conversationStatus").textContent =
     `Status: ${report.status}`;
@@ -2432,7 +2688,9 @@ async function openConversation(id) {
 
 function closeConversation() {
 
-  selectedReportId = null;
+  selectedReportId =
+    null;
+
 
   $("conversation")
     .classList.add("hidden");
@@ -2461,7 +2719,9 @@ async function loadMessages() {
     )
     .order(
       "created_at",
-      { ascending: true }
+      {
+        ascending: true
+      }
     );
 
 
@@ -2469,10 +2729,12 @@ async function loadMessages() {
 
     console.error(error);
 
+
     toast(
       "Could not load messages.",
       "error"
     );
+
 
     return;
   }
@@ -2505,14 +2767,19 @@ async function loadMessages() {
 
           </div>
 
+
           <div class="whitespace-pre-wrap">
             ${escapeHTML(
-              message.body || "Attachment"
+              message.body ||
+              "Attachment"
             )}
           </div>
 
+
           <div class="text-[10px] text-slate-500 mt-2">
-            ${fmtDate(message.created_at)}
+            ${fmtDate(
+              message.created_at
+            )}
           </div>
 
         </div>
@@ -2540,22 +2807,28 @@ $("messageForm").addEventListener(
 
 
     if (!currentUser) {
+
       openAuth();
+
       return;
     }
 
 
     if (!selectedReportId) {
+
       toast(
         "Select a case first.",
         "error"
       );
+
+
       return;
     }
 
 
     const body =
       $("messageText").value.trim();
+
 
     const file =
       $("messageFile").files[0];
@@ -2568,6 +2841,10 @@ $("messageForm").addEventListener(
 
     try {
 
+      /*
+        Send text message
+      */
+
       if (body) {
 
         const {
@@ -2575,6 +2852,7 @@ $("messageForm").addEventListener(
         } = await sb
           .from("report_messages")
           .insert({
+
             report_id:
               selectedReportId,
 
@@ -2585,6 +2863,7 @@ $("messageForm").addEventListener(
               "user",
 
             body
+
           });
 
 
@@ -2595,15 +2874,25 @@ $("messageForm").addEventListener(
       }
 
 
+      /*
+        Upload private attachment
+      */
+
       if (file) {
 
         const safe =
-          validateFile(file, 50);
+          validateFile(
+            file,
+            50
+          );
+
 
         if (!safe.ok) {
+
           throw new Error(
             safe.message
           );
+
         }
 
 
@@ -2616,15 +2905,27 @@ $("messageForm").addEventListener(
       }
 
 
-      $("messageText").value = "";
-      $("messageFile").value = "";
+      $("messageText").value =
+        "";
 
 
-      await sb
+      $("messageFile").value =
+        "";
+
+
+      /*
+        Update report timestamp
+      */
+
+      const {
+        error: updateError
+      } = await sb
         .from("reports")
         .update({
+
           updated_at:
             new Date().toISOString()
+
         })
         .eq(
           "id",
@@ -2632,13 +2933,20 @@ $("messageForm").addEventListener(
         );
 
 
+      if (updateError) {
+        console.error(updateError);
+      }
+
+
       await loadMessages();
 
     }
 
+
     catch (err) {
 
       console.error(err);
+
 
       toast(
         err.message ||
@@ -2656,7 +2964,10 @@ $("messageForm").addEventListener(
    FILE VALIDATION
 ============================================================ */
 
-function validateFile(file, maxMB) {
+function validateFile(
+  file,
+  maxMB
+) {
 
   const allowed = [
 
@@ -2690,9 +3001,12 @@ function validateFile(file, maxMB) {
   ) {
 
     return {
+
       ok: false,
+
       message:
         `File is larger than ${maxMB} MB.`
+
     };
 
   }
@@ -2701,21 +3015,27 @@ function validateFile(file, maxMB) {
   if (!allowed.includes(file.type)) {
 
     return {
+
       ok: false,
+
       message:
         "This file type is not allowed."
+
     };
 
   }
 
 
   return {
+
     ok: true,
+
     name:
       file.name.replace(
         /[^a-zA-Z0-9._-]/g,
         "_"
       )
+
   };
 
 }
@@ -2732,12 +3052,18 @@ async function uploadPrivateAttachment(
 ) {
 
   const safe =
-    validateFile(file, 50);
+    validateFile(
+      file,
+      50
+    );
+
 
   if (!safe.ok) {
+
     throw new Error(
       safe.message
     );
+
   }
 
 
@@ -2805,19 +3131,28 @@ async function uploadPrivateAttachment(
    RECORDER
 ============================================================ */
 
-async function startRecorder(kind) {
+async function startRecorder(
+  kind
+) {
 
   if (!currentUser) {
+
     openAuth();
+
     return;
   }
 
 
-  recorderKind = kind;
+  recorderKind =
+    kind;
+
+
   recorderChunks = [];
 
 
-  openModal("recorderModal");
+  openModal(
+    "recorderModal"
+  );
 
 
   $("recorderTitle").textContent =
@@ -2834,14 +3169,18 @@ async function startRecorder(kind) {
 
     recorderStream =
       await navigator.mediaDevices.getUserMedia(
+
         kind === "video"
+
           ? {
               audio: true,
               video: true
             }
+
           : {
               audio: true
             }
+
       );
 
 
@@ -2864,9 +3203,11 @@ async function startRecorder(kind) {
 
   }
 
+
   catch (err) {
 
     console.error(err);
+
 
     $("recordStatus").textContent =
       "Microphone/camera permission was denied or unavailable.";
@@ -2890,10 +3231,12 @@ function beginRecording() {
     MediaRecorder.isTypeSupported(
       "video/webm;codecs=vp9,opus"
     )
+
       ? {
           mimeType:
             "video/webm;codecs=vp9,opus"
         }
+
       : {};
 
 
@@ -2906,6 +3249,7 @@ function beginRecording() {
       );
 
   }
+
 
   catch (err) {
 
@@ -2921,9 +3265,11 @@ function beginRecording() {
     event => {
 
       if (event.data.size) {
+
         recorderChunks.push(
           event.data
         );
+
       }
 
     };
@@ -2934,6 +3280,7 @@ function beginRecording() {
 
       const mimeType =
         recorder.mimeType ||
+
         (
           recorderKind === "video"
             ? "video/webm"
@@ -2960,7 +3307,9 @@ function beginRecording() {
         );
 
 
-      pendingAttachments.push(file);
+      pendingAttachments.push(
+        file
+      );
 
 
       $("attachmentPreview").textContent =
@@ -3000,11 +3349,14 @@ function stopRecorder() {
 
     recorderStream
       .getTracks()
-      .forEach(track =>
-        track.stop()
+      .forEach(
+        track =>
+          track.stop()
       );
 
-    recorderStream = null;
+
+    recorderStream =
+      null;
 
   }
 
@@ -3017,19 +3369,26 @@ function stopRecorder() {
 
 async function openQR() {
 
-  openModal("qrModal");
+  openModal(
+    "qrModal"
+  );
 
 
   try {
 
     qrStream =
       await navigator.mediaDevices.getUserMedia({
+
         video: {
+
           facingMode: {
             ideal: "environment"
           }
+
         },
+
         audio: false
+
       });
 
 
@@ -3052,9 +3411,11 @@ async function openQR() {
 
   }
 
+
   catch (e) {
 
     console.error(e);
+
 
     $("qrStatus").textContent =
       "Camera access is unavailable.";
@@ -3069,6 +3430,7 @@ function scanQR() {
   const video =
     $("qrVideo");
 
+
   const canvas =
     $("qrCanvas");
 
@@ -3080,6 +3442,7 @@ function scanQR() {
 
   canvas.width =
     video.videoWidth;
+
 
   canvas.height =
     video.videoHeight;
@@ -3134,17 +3497,21 @@ function scanQR() {
   try {
 
     const url =
-      new URL(code.data);
+      new URL(
+        code.data
+      );
 
 
     if (
-      url.protocol !== "https:"
+      url.protocol !==
+      "https:"
     ) {
 
       toast(
         "Only secure HTTPS QR destinations are allowed.",
         "error"
       );
+
 
       return;
     }
@@ -3154,6 +3521,7 @@ function scanQR() {
       url.href;
 
   }
+
 
   catch {
 
@@ -3171,9 +3539,13 @@ function stopQR() {
 
   if (qrTimer) {
 
-    clearInterval(qrTimer);
+    clearInterval(
+      qrTimer
+    );
 
-    qrTimer = null;
+
+    qrTimer =
+      null;
 
   }
 
@@ -3182,11 +3554,14 @@ function stopQR() {
 
     qrStream
       .getTracks()
-      .forEach(track =>
-        track.stop()
+      .forEach(
+        track =>
+          track.stop()
       );
 
-    qrStream = null;
+
+    qrStream =
+      null;
 
   }
 
@@ -3207,6 +3582,7 @@ async function loadProfile() {
 
     box.innerHTML =
       '<p class="text-slate-400">Sign in to view your private profile.</p>';
+
 
     return;
   }
@@ -3231,6 +3607,7 @@ async function loadProfile() {
 
     box.innerHTML =
       '<p class="text-red-300">Profile unavailable.</p>';
+
 
     return;
   }
@@ -3311,6 +3688,7 @@ function adminTab(tab) {
       "error"
     );
 
+
     return;
   }
 
@@ -3319,13 +3697,16 @@ function adminTab(tab) {
     loadAdminReports();
   }
 
+
   if (tab === "posts") {
     loadAdminPosts();
   }
 
+
   if (tab === "users") {
     loadAdminUsers();
   }
+
 
   if (tab === "audit") {
     loadAudit();
@@ -3336,19 +3717,32 @@ function adminTab(tab) {
 
 /* ============================================================
    ADMIN REPORTS
+   FIXED: USE reports DIRECTLY
 ============================================================ */
 
 async function loadAdminReports() {
+
+  /*
+    IMPORTANT:
+    Do not use admin_reports_view here because
+    that view may still reference reports.case_code.
+
+    We read the real reports table directly.
+  */
 
   const {
     data,
     error
   } = await sb
-    .from("admin_reports_view")
-    .select("*")
+    .from("reports")
+    .select(
+      "id,subject,status,created_at,updated_at"
+    )
     .order(
       "created_at",
-      { ascending: false }
+      {
+        ascending: false
+      }
     );
 
 
@@ -3372,10 +3766,15 @@ async function loadAdminReports() {
   if (error) {
 
     $("adminContent").innerHTML += `
+
       <p class="text-red-300 mt-5">
-        ${escapeHTML(error.message)}
+        ${escapeHTML(
+          error.message
+        )}
       </p>
+
     `;
+
 
     return;
   }
@@ -3384,10 +3783,13 @@ async function loadAdminReports() {
   if (!data?.length) {
 
     $("adminContent").innerHTML += `
+
       <p class="text-slate-400 mt-5">
         No reports found.
       </p>
+
     `;
+
 
     return;
   }
@@ -3404,23 +3806,30 @@ async function loadAdminReports() {
           <div class="flex justify-between gap-3">
 
             <b>
-              ${escapeHTML(report.case_code)}
+              Case #${escapeHTML(report.id)}
             </b>
 
             <span class="text-xs">
-              ${escapeHTML(report.status)}
+              ${escapeHTML(
+                report.status ||
+                "submitted"
+              )}
             </span>
 
           </div>
 
 
           <div class="font-semibold mt-2">
-            ${escapeHTML(report.subject)}
+            ${escapeHTML(
+              report.subject
+            )}
           </div>
 
 
           <div class="text-xs text-slate-500 mt-1">
-            Created ${fmtDate(report.created_at)}
+            Created ${fmtDate(
+              report.created_at
+            )}
           </div>
 
 
@@ -3446,11 +3855,20 @@ async function loadAdminReports() {
                   "closed"
                 ]
                 .map(status => `
+
                   <option
                     value="${status}"
-                    ${status === report.status ? "selected" : ""}>
+                    ${
+                      status ===
+                      report.status
+                        ? "selected"
+                        : ""
+                    }>
+
                     ${status}
+
                   </option>
+
                 `)
                 .join("")
               }
@@ -3472,6 +3890,7 @@ async function loadAdminReports() {
 
 /* ============================================================
    ADMIN OPEN CASE
+   FIXED: NO case_code
 ============================================================ */
 
 async function adminOpenCase(id) {
@@ -3482,18 +3901,30 @@ async function adminOpenCase(id) {
   } = await sb
     .from("reports")
     .select(
-      "id,case_code,subject,status"
+      "id,subject,status"
     )
-    .eq("id", id)
+    .eq(
+      "id",
+      id
+    )
     .single();
 
 
-  if (reportError || !report) {
+  if (
+    reportError ||
+    !report
+  ) {
+
+    console.error(
+      reportError
+    );
+
 
     toast(
       "Could not open case.",
       "error"
     );
+
 
     return;
   }
@@ -3526,6 +3957,7 @@ async function adminOpenCase(id) {
       "error"
     );
 
+
     return;
   }
 
@@ -3540,14 +3972,17 @@ async function adminOpenCase(id) {
 
 
     <h3 class="text-2xl font-black mt-3">
-      ${escapeHTML(report.case_code)}
+      Case #${escapeHTML(report.id)}
     </h3>
 
 
     <p class="text-slate-400">
       ${escapeHTML(report.subject)}
       •
-      ${escapeHTML(report.status)}
+      ${escapeHTML(
+        report.status ||
+        "submitted"
+      )}
     </p>
 
 
@@ -3568,14 +4003,18 @@ async function adminOpenCase(id) {
             }
 
             •
-            ${fmtDate(message.created_at)}
+
+            ${fmtDate(
+              message.created_at
+            )}
 
           </div>
 
 
           <div class="whitespace-pre-wrap mt-2">
             ${escapeHTML(
-              message.body || ""
+              message.body ||
+              ""
             )}
           </div>
 
@@ -3613,19 +4052,26 @@ async function adminOpenCase(id) {
    ADMIN REPLY
 ============================================================ */
 
-async function adminReply(e, id) {
+async function adminReply(
+  e,
+  id
+) {
 
   e.preventDefault();
 
 
   if (!currentUser) {
+
     openAuth();
+
     return;
   }
 
 
   const body =
-    $("adminReplyText").value.trim();
+    $("adminReplyText")
+      .value
+      .trim();
 
 
   if (!body) {
@@ -3660,15 +4106,20 @@ async function adminReply(e, id) {
       "error"
     );
 
+
     return;
   }
 
 
-  await sb
+  const {
+    error: updateError
+  } = await sb
     .from("reports")
     .update({
+
       updated_at:
         new Date().toISOString()
+
     })
     .eq(
       "id",
@@ -3676,7 +4127,18 @@ async function adminReply(e, id) {
     );
 
 
-  await adminOpenCase(id);
+  if (updateError) {
+
+    console.error(
+      updateError
+    );
+
+  }
+
+
+  await adminOpenCase(
+    id
+  );
 
 
   toast(
@@ -3730,6 +4192,7 @@ async function adminSetStatus(
       "success"
     );
 
+
     loadAdminReports();
 
   }
@@ -3772,10 +4235,15 @@ async function loadAdminPosts() {
   if (error) {
 
     $("adminContent").innerHTML += `
+
       <p class="text-red-300 mt-5">
-        ${escapeHTML(error.message)}
+        ${escapeHTML(
+          error.message
+        )}
       </p>
+
     `;
+
 
     return;
   }
@@ -3792,7 +4260,9 @@ async function loadAdminPosts() {
           <div class="flex justify-between">
 
             <span>
-              ${escapeHTML(post.status)}
+              ${escapeHTML(
+                post.status
+              )}
             </span>
 
             <span class="text-xs text-slate-500">
@@ -3805,7 +4275,9 @@ async function loadAdminPosts() {
 
 
           <p class="mt-2 whitespace-pre-wrap">
-            ${escapeHTML(post.body)}
+            ${escapeHTML(
+              post.body
+            )}
           </p>
 
 
@@ -3830,13 +4302,16 @@ async function loadAdminPosts() {
    DELETE POST
 ============================================================ */
 
-async function adminDeletePost(id) {
+async function adminDeletePost(
+  id
+) {
 
   if (
     !confirm(
       "Delete this public post?"
     )
   ) {
+
     return;
   }
 
@@ -3869,6 +4344,7 @@ async function adminDeletePost(id) {
       "Post deleted.",
       "success"
     );
+
 
     loadAdminPosts();
 
@@ -3912,10 +4388,15 @@ async function loadAdminUsers() {
   if (error) {
 
     $("adminContent").innerHTML += `
+
       <p class="text-red-300 mt-5">
-        ${escapeHTML(error.message)}
+        ${escapeHTML(
+          error.message
+        )}
       </p>
+
     `;
+
 
     return;
   }
@@ -3959,19 +4440,27 @@ async function loadAdminUsers() {
             <tr class="border-t border-line">
 
               <td class="p-3">
-                ${escapeHTML(user.full_name)}
+                ${escapeHTML(
+                  user.full_name
+                )}
               </td>
 
               <td class="p-3">
-                ${escapeHTML(user.registration_number)}
+                ${escapeHTML(
+                  user.registration_number
+                )}
               </td>
 
               <td class="p-3">
-                ${escapeHTML(user.role)}
+                ${escapeHTML(
+                  user.role
+                )}
               </td>
 
               <td class="p-3">
-                ${fmtDate(user.created_at)}
+                ${fmtDate(
+                  user.created_at
+                )}
               </td>
 
             </tr>
@@ -4024,10 +4513,15 @@ async function loadAudit() {
   if (error) {
 
     $("adminContent").innerHTML += `
+
       <p class="text-red-300 mt-5">
-        ${escapeHTML(error.message)}
+        ${escapeHTML(
+          error.message
+        )}
       </p>
+
     `;
+
 
     return;
   }
@@ -4042,14 +4536,25 @@ async function loadAudit() {
         <div class="bg-black/20 rounded-xl p-3 text-sm">
 
           <b>
-            ${escapeHTML(item.action)}
+            ${escapeHTML(
+              item.action
+            )}
           </b>
 
           <span class="text-slate-500">
+
             •
-            ${escapeHTML(item.actor_role)}
+
+            ${escapeHTML(
+              item.actor_role
+            )}
+
             •
-            ${fmtDate(item.created_at)}
+
+            ${fmtDate(
+              item.created_at
+            )}
+
           </span>
 
         </div>
@@ -4095,7 +4600,10 @@ document.addEventListener(
     }
 
 
-    if (e.key === "PrintScreen") {
+    if (
+      e.key ===
+      "PrintScreen"
+    ) {
 
       toast(
         "Screen capture controls are handled by your device/operating system; the website cannot guarantee blocking screenshots."
@@ -4142,6 +4650,7 @@ async function initStats() {
         }
       ),
 
+
     sb
       .from("public_posts")
       .select(
@@ -4155,6 +4664,7 @@ async function initStats() {
         "status",
         "published"
       ),
+
 
     sb
       .from("club_events")
@@ -4170,13 +4680,18 @@ async function initStats() {
 
 
   $("statMembers").textContent =
-    members.count ?? "—";
+    members.count ??
+    "—";
+
 
   $("statPosts").textContent =
-    posts.count ?? "—";
+    posts.count ??
+    "—";
+
 
   $("statEvents").textContent =
-    events.count ?? "—";
+    events.count ??
+    "—";
 
 }
 
@@ -4197,12 +4712,14 @@ async function initStats() {
 
   }
 
+
   catch (error) {
 
     console.error(
       "Application initialization error:",
       error
     );
+
 
     toast(
       "Some application data could not be loaded.",
