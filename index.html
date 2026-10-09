@@ -548,7 +548,7 @@
                 type="file"
                 class="hidden"
                 multiple
-                accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt">
+                accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt,.rtf,.odt,.xls,.xlsx,.csv,.ppt,.pptx,.zip,.7z,.rar,.m4a,.aac,.mp3,.wav,.ogg,.webm,.mp4,.mov,.mkv,.avi,.heic,.heif">
 
             </label>
 
@@ -650,7 +650,8 @@
               📎
               <input id="messageFile"
                 type="file"
-                class="hidden">
+                class="hidden"
+                accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt,.rtf,.odt,.xls,.xlsx,.csv,.ppt,.pptx,.zip,.7z,.rar,.m4a,.aac,.mp3,.wav,.ogg,.webm,.mp4,.mov,.mkv,.avi,.heic,.heif">
             </label>
 
             <button
@@ -1122,10 +1123,10 @@
 ============================================================ */
 
 const SUPABASE_URL =
-  "https://gmegddwwtjnkcoonspho.supabase.co";
+  "https://wrqhpcdjqeaorcejvtzo.supabase.co";
 
 const SUPABASE_ANON_KEY =
-  "sb_publishable_U-9bptbhyQL295EsFIEBsw_LsxQwAZJ";
+  "sb_publishable_19heO17Lcf7NhkScVD5J-Q_-fdOcrPM";
 
 const sb = window.supabase.createClient(
   SUPABASE_URL,
@@ -2377,6 +2378,11 @@ $("reportFile").addEventListener(
 );
 
 
+$("messageFile").addEventListener("change", () => {
+  const f = $("messageFile").files?.[0];
+  if (f) toast(`Attachment selected: ${f.name} (${formatBytes(f.size)})`, "success");
+});
+
 /* ============================================================
    SECURE REPORT
    FIXED: NO case_code
@@ -2511,6 +2517,8 @@ $("reportForm").addEventListener(
 
 
       showPage("messages");
+      await loadMyReports();
+      await openConversation(report.id);
 
     }
 
@@ -2626,174 +2634,103 @@ async function loadMyReports() {
 ============================================================ */
 
 async function openConversation(id) {
-
-  if (!currentUser) {
-
-    openAuth();
-
-    return;
-  }
-
-
-  selectedReportId =
-    id;
-
-
-  const {
-    data: report,
-    error
-  } = await sb
-    .from("reports")
-    .select(
-      "id,subject,status"
-    )
-    .eq(
-      "id",
-      id
-    )
-    .single();
-
-
+  if (!currentUser) { openAuth(); return; }
+  selectedReportId = id;
+  const { data: report, error } = await sb.from("reports")
+    .select("id,subject,status").eq("id", id).single();
   if (error || !report) {
-
     console.error(error);
-
-
-    toast(
-      "Could not open this case.",
-      "error"
-    );
-
-
+    toast("Could not open this case. Check report access permissions.", "error");
     return;
   }
-
-
-  $("conversationTitle").textContent =
-    `Case #${report.id} — ${report.subject}`;
-
-
-  $("conversationStatus").textContent =
-    `Status: ${report.status}`;
-
-
-  $("conversation")
-    .classList.remove("hidden");
-
-
+  $("conversationTitle").textContent = `Case #${report.id} — ${report.subject}`;
+  $("conversationStatus").textContent = `Status: ${report.status || "submitted"}`;
+  $("conversation").classList.remove("hidden");
   await loadMessages();
-
+  $("conversation").scrollIntoView({behavior:"smooth", block:"start"});
+  $("messageText").focus({preventScroll:true});
 }
-
 
 function closeConversation() {
-
-  selectedReportId =
-    null;
-
-
-  $("conversation")
-    .classList.add("hidden");
-
+  selectedReportId = null;
+  $("conversation").classList.add("hidden");
 }
 
+function attachmentIcon(mime="", name="") {
+  const ext = (name.split(".").pop() || "").toLowerCase();
+  if (mime.startsWith("image/")) return "🖼️";
+  if (mime.startsWith("audio/") || ["mp3","m4a","wav","ogg","aac","webm"].includes(ext)) return "🎧";
+  if (mime.startsWith("video/") || ["mp4","mov","mkv","avi"].includes(ext)) return "🎬";
+  if (mime.includes("pdf") || ext === "pdf") return "📕";
+  return "📎";
+}
+
+function formatBytes(bytes=0) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024*1024) return `${(bytes/1024).toFixed(0)} KB`;
+  return `${(bytes/(1024*1024)).toFixed(1)} MB`;
+}
+
+async function getCaseAttachments(reportId) {
+  const {data, error} = await sb.from("private_attachments")
+    .select("id,report_id,storage_path,file_name,mime_type,file_size,created_at")
+    .eq("report_id", reportId)
+    .order("created_at", {ascending:true});
+  if (error) {
+    console.warn("Could not load private attachments:", error.message);
+    return [];
+  }
+  return Promise.all((data || []).map(async item => {
+    const {data: signed, error: signedError} = await sb.storage
+      .from("private-files").createSignedUrl(item.storage_path, 60*30);
+    return {...item, signedUrl: signedError ? null : signed?.signedUrl};
+  }));
+}
+
+function attachmentCard(item) {
+  const icon = attachmentIcon(item.mime_type, item.file_name);
+  const label = escapeHTML(item.file_name || "Attachment");
+  const size = formatBytes(Number(item.file_size || 0));
+  if (!item.signedUrl) {
+    return `<div class="mt-2 rounded-xl border border-line p-3 text-sm">${icon} ${label}<div class="text-xs text-amber-300 mt-1">File link unavailable — check private-files bucket permissions.</div></div>`;
+  }
+  const mime = item.mime_type || "";
+  let preview = "";
+  if (mime.startsWith("image/")) preview = `<a href="${item.signedUrl}" target="_blank" rel="noopener"><img src="${item.signedUrl}" alt="${label}" loading="lazy" class="mt-2 max-h-64 rounded-xl object-contain"></a>`;
+  else if (mime.startsWith("audio/")) preview = `<audio controls preload="none" class="mt-2 w-full"><source src="${item.signedUrl}" type="${escapeHTML(mime)}">Your browser cannot play this audio.</audio>`;
+  else if (mime.startsWith("video/")) preview = `<video controls playsinline preload="metadata" class="mt-2 max-h-72 w-full rounded-xl"><source src="${item.signedUrl}" type="${escapeHTML(mime)}">Your browser cannot play this video.</video>`;
+  return `<div class="mt-2 rounded-xl border border-line bg-black/20 p-3 text-sm"><div class="flex items-center gap-2 min-w-0"><span>${icon}</span><div class="min-w-0 flex-1"><div class="break-all font-semibold">${label}</div><div class="text-xs text-slate-400">${size}</div></div><a href="${item.signedUrl}" target="_blank" rel="noopener" download="${label}" class="shrink-0 rounded-lg bg-accent px-3 py-2 text-xs font-bold text-ink">Open / Download</a></div>${preview}</div>`;
+}
 
 async function loadMessages() {
-
-  if (!selectedReportId) {
-    return;
-  }
-
-
-  const {
-    data,
-    error
-  } = await sb
-    .from("report_messages")
-    .select(
-      "id,sender_role,body,created_at"
-    )
-    .eq(
-      "report_id",
-      selectedReportId
-    )
-    .order(
-      "created_at",
-      {
-        ascending: true
-      }
-    );
-
-
+  if (!selectedReportId) return;
+  const [{data: messages, error}, attachments] = await Promise.all([
+    sb.from("report_messages").select("id,sender_role,body,created_at")
+      .eq("report_id", selectedReportId).order("created_at", {ascending:true}),
+    getCaseAttachments(selectedReportId)
+  ]);
   if (error) {
-
     console.error(error);
-
-
-    toast(
-      "Could not load messages.",
-      "error"
-    );
-
-
+    toast("Could not load messages. Check report_messages permissions.", "error");
     return;
   }
+  const timeline = [
+    ...(messages || []).map(m => ({...m, itemType:"message", sortDate:m.created_at})),
+    ...attachments.map(a => ({...a, itemType:"attachment", sender_role:"attachment", sortDate:a.created_at}))
+  ].sort((a,b) => new Date(a.sortDate || 0) - new Date(b.sortDate || 0));
 
-
-  $("messageList").innerHTML =
-    (data || []).map(message => `
-
-      <div class="${
-        message.sender_role === "user"
-          ? "text-right"
-          : ""
-      }">
-
-        <div class="inline-block max-w-[85%]
-          rounded-2xl px-4 py-3
-          ${
-            message.sender_role === "user"
-              ? "bg-accent/15"
-              : "bg-white/5"
-          }">
-
-          <div class="text-xs text-slate-500 mb-1">
-
-            ${
-              message.sender_role === "user"
-                ? "You"
-                : "Authorized Admin"
-            }
-
-          </div>
-
-
-          <div class="whitespace-pre-wrap">
-            ${escapeHTML(
-              message.body ||
-              "Attachment"
-            )}
-          </div>
-
-
-          <div class="text-[10px] text-slate-500 mt-2">
-            ${fmtDate(
-              message.created_at
-            )}
-          </div>
-
-        </div>
-
-      </div>
-
-    `).join("");
-
-
-  $("messageList").scrollTop =
-    $("messageList").scrollHeight;
-
+  $("messageList").innerHTML = timeline.length ? timeline.map(item => {
+    const mine = item.itemType === "message" && item.sender_role === "user";
+    const who = item.itemType === "attachment" ? "Case attachment" : (mine ? "You" : "Authorized Admin");
+    return `<div class="flex ${mine ? "justify-end" : "justify-start"}">
+      <div class="max-w-[92%] sm:max-w-[82%] rounded-2xl px-4 py-3 ${mine ? "bg-emerald-900/40 border border-emerald-700/30" : "bg-white/5 border border-white/5"}">
+        <div class="text-xs text-slate-400 mb-1">${who}</div>
+        ${item.itemType === "attachment" ? attachmentCard(item) : `<div class="whitespace-pre-wrap break-words">${escapeHTML(item.body || "")}</div>`}
+        <div class="text-[10px] text-slate-500 mt-2">${fmtDate(item.created_at)}</div>
+      </div></div>`;
+  }).join("") : `<div class="text-center text-slate-500 py-8">No messages yet. Start the private conversation below.</div>`;
+  $("messageList").scrollTop = $("messageList").scrollHeight;
 }
-
 
 /* ============================================================
    SEND PRIVATE MESSAGE
@@ -2964,82 +2901,32 @@ $("messageForm").addEventListener(
    FILE VALIDATION
 ============================================================ */
 
-function validateFile(
-  file,
-  maxMB
-) {
-
-  const allowed = [
-
-    "image/jpeg",
-    "image/png",
-    "image/webp",
-    "image/gif",
-
-    "audio/webm",
-    "audio/ogg",
-    "audio/mpeg",
-    "audio/wav",
-
-    "video/webm",
-    "video/mp4",
-
-    "application/pdf",
-
-    "text/plain",
-
-    "application/msword",
-
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-
-  ];
-
-
-  if (
-    file.size >
-    maxMB * 1024 * 1024
-  ) {
-
-    return {
-
-      ok: false,
-
-      message:
-        `File is larger than ${maxMB} MB.`
-
-    };
-
-  }
-
-
-  if (!allowed.includes(file.type)) {
-
-    return {
-
-      ok: false,
-
-      message:
-        "This file type is not allowed."
-
-    };
-
-  }
-
-
-  return {
-
-    ok: true,
-
-    name:
-      file.name.replace(
-        /[^a-zA-Z0-9._-]/g,
-        "_"
-      )
-
-  };
-
+function validateFile(file, maxMB=50) {
+  if (!file) return {ok:false, message:"Choose a file first."};
+  if (file.size > maxMB * 1024 * 1024) return {ok:false, message:`File is larger than ${maxMB} MB.`};
+  const name = file.name || "attachment";
+  const ext = (name.split(".").pop() || "").toLowerCase();
+  const mime = (file.type || "").toLowerCase();
+  const allowedExt = new Set([
+    "jpg","jpeg","png","webp","gif","bmp","heic","heif","svg",
+    "mp3","m4a","aac","wav","ogg","oga","opus","flac","weba",
+    "mp4","m4v","mov","webm","mkv","avi","mpeg","mpg","3gp",
+    "pdf","txt","rtf","doc","docx","odt","xls","xlsx","csv","ppt","pptx","odp","zip","rar","7z"
+  ]);
+  const allowedMime = mime.startsWith("image/") || mime.startsWith("audio/") || mime.startsWith("video/") || [
+    "application/pdf","text/plain","text/rtf","application/rtf","application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.ms-excel","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "text/csv","application/csv","application/vnd.ms-powerpoint",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "application/vnd.oasis.opendocument.text","application/vnd.oasis.opendocument.spreadsheet",
+    "application/vnd.oasis.opendocument.presentation","application/zip","application/x-zip-compressed",
+    "application/x-rar-compressed","application/vnd.rar","application/x-7z-compressed","application/octet-stream"
+  ].includes(mime);
+  // Some phones and browsers return an empty or generic MIME type; use the extension as a fallback.
+  if (!allowedMime && !allowedExt.has(ext)) return {ok:false, message:"This file format is not supported. Choose an image, audio, video, PDF, Office document, or archive file."};
+  return {ok:true, name:name.replace(/[^a-zA-Z0-9._-]/g, "_")};
 }
-
 
 /* ============================================================
    PRIVATE FILE UPLOAD
@@ -3082,7 +2969,11 @@ async function uploadPrivateAttachment(
       {
         contentType:
           file.type ||
-          "application/octet-stream",
+          (file.name.toLowerCase().endsWith(".m4a") ? "audio/mp4" :
+           file.name.toLowerCase().endsWith(".mp3") ? "audio/mpeg" :
+           file.name.toLowerCase().endsWith(".mp4") ? "video/mp4" :
+           file.name.toLowerCase().endsWith(".pdf") ? "application/pdf" :
+           "application/octet-stream"),
 
         upsert: false
       }
@@ -3895,6 +3786,8 @@ async function loadAdminReports() {
 
 async function adminOpenCase(id) {
 
+  selectedReportId = id;
+
   const {
     data: report,
     error: reportError
@@ -3930,24 +3823,11 @@ async function adminOpenCase(id) {
   }
 
 
-  const {
-    data: messages,
-    error: messageError
-  } = await sb
-    .from("report_messages")
-    .select(
-      "id,sender_role,body,created_at"
-    )
-    .eq(
-      "report_id",
-      id
-    )
-    .order(
-      "created_at",
-      {
-        ascending: true
-      }
-    );
+  const [{data: messages, error: messageError}, attachments] = await Promise.all([
+    sb.from("report_messages").select("id,sender_role,body,created_at")
+      .eq("report_id", id).order("created_at", {ascending:true}),
+    getCaseAttachments(id)
+  ]);
 
 
   if (messageError) {
@@ -3990,36 +3870,17 @@ async function adminOpenCase(id) {
       max-h-[45vh]
       overflow-y-auto">
 
-      ${(messages || []).map(message => `
-
+      ${[
+        ...(messages || []).map(m => ({...m, itemType:"message", sortDate:m.created_at})),
+        ...attachments.map(a => ({...a, itemType:"attachment", sortDate:a.created_at}))
+      ].sort((a,b) => new Date(a.sortDate || 0) - new Date(b.sortDate || 0)).map(item => `
         <div class="bg-black/20 rounded-2xl p-4">
-
           <div class="text-xs text-slate-500">
-
-            ${
-              message.sender_role === "user"
-                ? "User"
-                : "Admin"
-            }
-
-            •
-
-            ${fmtDate(
-              message.created_at
-            )}
-
+            ${item.itemType === "attachment" ? "Case attachment" : (item.sender_role === "user" ? "User" : "Admin")}
+            • ${fmtDate(item.created_at)}
           </div>
-
-
-          <div class="whitespace-pre-wrap mt-2">
-            ${escapeHTML(
-              message.body ||
-              ""
-            )}
-          </div>
-
+          ${item.itemType === "attachment" ? attachmentCard(item) : `<div class="whitespace-pre-wrap break-words mt-2">${escapeHTML(item.body || "")}</div>`}
         </div>
-
       `).join("")}
 
     </div>
@@ -4027,21 +3888,26 @@ async function adminOpenCase(id) {
 
     <form
       onsubmit="adminReply(event,'${id}')"
-      class="mt-5 flex gap-2">
+      class="mt-5 flex flex-wrap gap-2">
 
       <input
         id="adminReplyText"
-        required
         maxlength="5000"
-        class="flex-1 bg-black/20 border border-line rounded-xl px-4 py-3"
+        class="flex-1 min-w-[180px] bg-black/20 border border-line rounded-xl px-4 py-3"
         placeholder="Reply privately to this user...">
+
+      <label class="px-4 py-3 border border-line rounded-xl cursor-pointer" title="Attach a file">
+        📎 Attach
+        <input id="adminReplyFile" type="file" class="hidden"
+          accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt,.rtf,.odt,.xls,.xlsx,.csv,.ppt,.pptx,.zip,.7z,.rar,.m4a,.aac,.mp3,.wav,.ogg,.webm,.mp4,.mov,.mkv,.avi,.heic,.heif">
+      </label>
 
       <button
         class="px-5 py-3 rounded-xl bg-accent text-ink font-bold">
-        Reply
+        Send Reply
       </button>
-
     </form>
+    <p class="text-xs text-slate-500 mt-2">Private attachments: up to 50 MB each. Use HTTPS to record voice/video.</p>
 
   `;
 
@@ -4052,102 +3918,30 @@ async function adminOpenCase(id) {
    ADMIN REPLY
 ============================================================ */
 
-async function adminReply(
-  e,
-  id
-) {
-
+async function adminReply(e, id) {
   e.preventDefault();
-
-
-  if (!currentUser) {
-
-    openAuth();
-
-    return;
+  if (!currentUser) { openAuth(); return; }
+  const body = $("adminReplyText").value.trim();
+  const file = $("adminReplyFile")?.files?.[0] || null;
+  if (!body && !file) { toast("Write a reply or attach a file.", "error"); return; }
+  try {
+    if (body) {
+      const {error} = await sb.from("report_messages").insert({
+        report_id:id, sender_id:currentUser.id, sender_role:"admin", body
+      });
+      if (error) throw error;
+    }
+    if (file) await uploadPrivateAttachment("message", id, file);
+    const {error:updateError} = await sb.from("reports")
+      .update({updated_at:new Date().toISOString()}).eq("id", id);
+    if (updateError) console.warn("Could not update report timestamp:", updateError.message);
+    await adminOpenCase(id);
+    toast("Private reply sent.", "success");
+  } catch (err) {
+    console.error(err);
+    toast(err.message || "Private reply failed.", "error");
   }
-
-
-  const body =
-    $("adminReplyText")
-      .value
-      .trim();
-
-
-  if (!body) {
-    return;
-  }
-
-
-  const {
-    error
-  } = await sb
-    .from("report_messages")
-    .insert({
-
-      report_id:
-        id,
-
-      sender_id:
-        currentUser.id,
-
-      sender_role:
-        "admin",
-
-      body
-
-    });
-
-
-  if (error) {
-
-    toast(
-      error.message,
-      "error"
-    );
-
-
-    return;
-  }
-
-
-  const {
-    error: updateError
-  } = await sb
-    .from("reports")
-    .update({
-
-      updated_at:
-        new Date().toISOString()
-
-    })
-    .eq(
-      "id",
-      id
-    );
-
-
-  if (updateError) {
-
-    console.error(
-      updateError
-    );
-
-  }
-
-
-  await adminOpenCase(
-    id
-  );
-
-
-  toast(
-    "Private reply sent.",
-    "success"
-  );
-
 }
-
 
 /* ============================================================
    ADMIN STATUS
