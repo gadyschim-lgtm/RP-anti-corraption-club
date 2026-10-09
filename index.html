@@ -2511,7 +2511,7 @@ $("reportForm").addEventListener(
       */
 
       toast(
-        `Report submitted. Case ID: ${report.id}`,
+        `Report submitted successfully.`,
         "success"
       );
 
@@ -2546,87 +2546,33 @@ $("reportForm").addEventListener(
 ============================================================ */
 
 async function loadMyReports() {
-
   if (!currentUser) {
-
-    $("myReports").innerHTML =
-      '<div class="text-slate-400">Sign in to view your private cases.</div>';
-
+    $("myReports").innerHTML = '<div class="text-slate-400">Sign in to view your private cases.</div>';
     return;
   }
-
-
-  const {
-    data,
-    error
-  } = await sb
-    .from("reports")
-    .select(
-      "id,subject,status,created_at,updated_at"
-    )
-    .order(
-      "created_at",
-      {
-        ascending: false
-      }
-    );
-
-
+  const {data, error} = await sb.from("reports")
+    .select("id,subject,status,initial_body,created_at,updated_at")
+    .order("created_at", {ascending:false});
   if (error) {
-
     console.error(error);
-
-
-    $("myReports").innerHTML =
-      '<div class="text-red-300">Could not load cases.</div>';
-
-
+    $("myReports").innerHTML = '<div class="text-red-300">Could not load cases.</div>';
     return;
   }
-
-
-  $("myReports").innerHTML =
-    data?.length
-
-      ? data.map(report => `
-
-          <button
-            onclick="openConversation('${report.id}')"
-            class="w-full text-left glass rounded-2xl p-4 hover:bg-white/5">
-
-            <div class="flex justify-between gap-4">
-
-              <b>
-                Case #${escapeHTML(report.id)}
-              </b>
-
-              <span class="text-xs px-2 py-1 rounded-lg bg-white/5">
-                ${escapeHTML(report.status || "submitted")}
-              </span>
-
-            </div>
-
-
-            <div class="font-semibold mt-2">
-              ${escapeHTML(report.subject)}
-            </div>
-
-
-            <div class="text-xs text-slate-500 mt-1">
-              ${fmtDate(
-                report.updated_at ||
-                report.created_at
-              )}
-            </div>
-
-          </button>
-
-        `).join("")
-
-      : '<div class="text-slate-400">No cases yet.</div>';
-
+  const previews = await getLatestCasePreviews(data || []);
+  $("myReports").innerHTML = data?.length ? data.map(report => {
+    const preview = previews.get(String(report.id)) || "No message text yet.";
+    return `
+      <button onclick="openConversation('${report.id}')" class="w-full text-left glass rounded-2xl p-4 hover:bg-white/5 transition">
+        <div class="flex justify-between gap-4 items-start">
+          <b>Registration No: ${escapeHTML(currentProfile?.registration_number || "—")}</b>
+          <span class="text-xs px-2 py-1 rounded-lg bg-white/5">${escapeHTML(report.status || "submitted")}</span>
+        </div>
+        <div class="font-semibold mt-2">${escapeHTML(report.subject)}</div>
+        <div class="text-sm text-slate-300 mt-2 line-clamp-2 break-words">${escapeHTML(preview)}</div>
+        <div class="text-xs text-slate-500 mt-2">${fmtDate(report.updated_at || report.created_at)} · Click to open full conversation</div>
+      </button>`;
+  }).join("") : '<div class="text-slate-400">No cases yet.</div>';
 }
-
 
 /* ============================================================
    PRIVATE CONVERSATION
@@ -2637,23 +2583,19 @@ async function openConversation(id) {
   if (!currentUser) { openAuth(); return; }
   selectedReportId = id;
   const { data: report, error } = await sb.from("reports")
-    .select("id,subject,status").eq("id", id).single();
+    .select("id,subject,status,initial_body,created_at,reporter_id")
+    .eq("id", id).single();
   if (error || !report) {
     console.error(error);
     toast("Could not open this case. Check report access permissions.", "error");
     return;
   }
-  $("conversationTitle").textContent = `Case #${report.id} — ${report.subject}`;
-  $("conversationStatus").textContent = `Status: ${report.status || "submitted"}`;
+  $("conversationTitle").textContent = `${currentProfile?.registration_number ? `Reg. No: ${currentProfile.registration_number} · ` : ""}${report.subject}`;
+  $("conversationStatus").textContent = `Status: ${report.status || "submitted"} · Private conversation`;
   $("conversation").classList.remove("hidden");
-  await loadMessages();
+  await loadMessages(report);
   $("conversation").scrollIntoView({behavior:"smooth", block:"start"});
   $("messageText").focus({preventScroll:true});
-}
-
-function closeConversation() {
-  selectedReportId = null;
-  $("conversation").classList.add("hidden");
 }
 
 function attachmentIcon(mime="", name="") {
@@ -2669,6 +2611,31 @@ function formatBytes(bytes=0) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024*1024) return `${(bytes/1024).toFixed(0)} KB`;
   return `${(bytes/(1024*1024)).toFixed(1)} MB`;
+}
+
+async function getLatestCasePreviews(reports = []) {
+  const previews = new Map();
+  for (const report of reports) {
+    previews.set(String(report.id), String(report.initial_body || "").trim());
+  }
+  const ids = reports.map(r => r.id);
+  if (!ids.length) return previews;
+  const {data, error} = await sb.from("report_messages")
+    .select("report_id,body,created_at,sender_role")
+    .in("report_id", ids)
+    .order("created_at", {ascending:false});
+  if (error) {
+    console.warn("Could not load message previews:", error.message);
+    return previews;
+  }
+  const seen = new Set();
+  for (const message of (data || [])) {
+    const key = String(message.report_id);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    previews.set(key, String(message.body || "📎 Attachment or media message").trim());
+  }
+  return previews;
 }
 
 async function getCaseAttachments(reportId) {
@@ -2702,31 +2669,82 @@ function attachmentCard(item) {
   return `<div class="mt-2 rounded-xl border border-line bg-black/20 p-3 text-sm"><div class="flex items-center gap-2 min-w-0"><span>${icon}</span><div class="min-w-0 flex-1"><div class="break-all font-semibold">${label}</div><div class="text-xs text-slate-400">${size}</div></div><a href="${item.signedUrl}" target="_blank" rel="noopener" download="${label}" class="shrink-0 rounded-lg bg-accent px-3 py-2 text-xs font-bold text-ink">Open / Download</a></div>${preview}</div>`;
 }
 
-async function loadMessages() {
+async function getConversationProfiles(ids = []) {
+  const uniqueIds = [...new Set(ids.filter(Boolean).map(String))];
+  const map = new Map();
+  if (!uniqueIds.length) return map;
+  const {data, error} = await sb.from("profiles")
+    .select("id,full_name,registration_number,role")
+    .in("id", uniqueIds);
+  if (error) {
+    console.warn("Could not load conversation profile names:", error.message);
+    return map;
+  }
+  for (const profile of (data || [])) map.set(String(profile.id), profile);
+  return map;
+}
+
+function conversationSenderLabel(item, isMine, profiles, adminView = false) {
+  if (item.isOriginalReport) {
+    const reporter = profiles.get(String(item.reporter_id || ""));
+    if (adminView) return `Reporter · Reg. No: ${reporter?.registration_number || "Unavailable"} · Original report`;
+    return `${currentProfile?.full_name || "You"} · Original report`;
+  }
+  const sender = profiles.get(String(item.sender_id || ""));
+  if (adminView) {
+    if (item.sender_role === "admin") return sender?.full_name || currentProfile?.full_name || "Authorized Admin";
+    return `Reporter · Reg. No: ${sender?.registration_number || "Unavailable"}`;
+  }
+  if (item.sender_role === "admin") return sender?.full_name || "Authorized Admin";
+  return sender?.full_name || currentProfile?.full_name || "You";
+}
+
+async function loadMessages(reportOverride = null) {
   if (!selectedReportId) return;
-  const [{data: messages, error}, attachments] = await Promise.all([
-    sb.from("report_messages").select("id,sender_role,body,created_at")
+  const [reportResult, messageResult, attachments] = await Promise.all([
+    reportOverride ? Promise.resolve({data:reportOverride,error:null}) :
+      sb.from("reports").select("id,subject,status,initial_body,created_at,reporter_id").eq("id", selectedReportId).single(),
+    sb.from("report_messages").select("id,sender_id,sender_role,body,created_at")
       .eq("report_id", selectedReportId).order("created_at", {ascending:true}),
     getCaseAttachments(selectedReportId)
   ]);
+  const report = reportResult.data;
+  const messages = messageResult.data;
+  const error = messageResult.error || reportResult.error;
   if (error) {
     console.error(error);
-    toast("Could not load messages. Check report_messages permissions.", "error");
+    toast("Could not load the complete conversation. Check report/message permissions.", "error");
     return;
   }
+
   const timeline = [
+    ...(report?.initial_body ? [{id:`report-${report.id}`, body:report.initial_body,
+      sender_role:"user", sender_id:report.reporter_id || null, reporter_id:report.reporter_id || null,
+      created_at:report.created_at, itemType:"message", isOriginalReport:true, sortDate:report.created_at}] : []),
     ...(messages || []).map(m => ({...m, itemType:"message", sortDate:m.created_at})),
-    ...attachments.map(a => ({...a, itemType:"attachment", sender_role:"attachment", sortDate:a.created_at}))
+    ...attachments.map(a => ({...a, itemType:"attachment", sortDate:a.created_at}))
   ].sort((a,b) => new Date(a.sortDate || 0) - new Date(b.sortDate || 0));
+  const profiles = await getConversationProfiles([
+    report?.reporter_id, currentUser?.id,
+    ...timeline.map(item => item.sender_id),
+    ...timeline.filter(item => item.itemType === "attachment").map(item => String(item.storage_path || "").split("/")[0])
+  ]);
 
   $("messageList").innerHTML = timeline.length ? timeline.map(item => {
-    const mine = item.itemType === "message" && item.sender_role === "user";
-    const who = item.itemType === "attachment" ? "Case attachment" : (mine ? "You" : "Authorized Admin");
-    return `<div class="flex ${mine ? "justify-end" : "justify-start"}">
-      <div class="max-w-[92%] sm:max-w-[82%] rounded-2xl px-4 py-3 ${mine ? "bg-emerald-900/40 border border-emerald-700/30" : "bg-white/5 border border-white/5"}">
-        <div class="text-xs text-slate-400 mb-1">${who}</div>
-        ${item.itemType === "attachment" ? attachmentCard(item) : `<div class="whitespace-pre-wrap break-words">${escapeHTML(item.body || "")}</div>`}
-        <div class="text-[10px] text-slate-500 mt-2">${fmtDate(item.created_at)}</div>
+    const isAttachment = item.itemType === "attachment";
+    const isMine = isAttachment
+      ? String(item.storage_path || "").startsWith(`${currentUser.id}/`)
+      : (isAdmin() ? item.sender_role === "admin" : item.sender_role === "user");
+    const who = isAttachment
+      ? (isAdmin()
+          ? (isMine ? `${currentProfile?.full_name || "Admin"} · Attachment` : `Reporter · Reg. No: ${profiles.get(String(report?.reporter_id || ""))?.registration_number || "Unavailable"} · Attachment`)
+          : (isMine ? `${currentProfile?.full_name || "You"} · Attachment` : `${profiles.get(String(item.storage_path || "").split("/")[0])?.full_name || "Authorized Admin"} · Attachment`))
+      : conversationSenderLabel(item, isMine, profiles, isAdmin());
+    return `<div class="flex ${isMine ? "justify-end" : "justify-start"}">
+      <div class="w-fit max-w-[94%] sm:max-w-[82%] rounded-2xl px-4 py-3 ${isMine ? "bg-emerald-900/45 border border-emerald-700/40 rounded-br-md" : "bg-slate-800/90 border border-slate-600/40 rounded-bl-md"}">
+        <div class="text-xs ${isMine ? "text-emerald-200" : "text-amber-200"} mb-1 font-semibold">${escapeHTML(who)}</div>
+        ${isAttachment ? attachmentCard(item) : `<div class="whitespace-pre-wrap break-words text-sm leading-6">${escapeHTML(item.body || "")}</div>`}
+        <div class="text-[10px] text-slate-400 mt-2 text-right">${escapeHTML(fmtDate(item.created_at))}</div>
       </div></div>`;
   }).join("") : `<div class="text-center text-slate-500 py-8">No messages yet. Start the private conversation below.</div>`;
   $("messageList").scrollTop = $("messageList").scrollHeight;
@@ -3627,7 +3645,7 @@ async function loadAdminReports() {
   } = await sb
     .from("reports")
     .select(
-      "id,subject,status,created_at,updated_at"
+      "id,subject,status,initial_body,created_at,updated_at,reporter_id"
     )
     .order(
       "created_at",
@@ -3635,7 +3653,6 @@ async function loadAdminReports() {
         ascending: false
       }
     );
-
 
   $("adminContent").innerHTML = `
 
@@ -3672,19 +3689,14 @@ async function loadAdminReports() {
 
 
   if (!data?.length) {
-
     $("adminContent").innerHTML += `
-
-      <p class="text-slate-400 mt-5">
-        No reports found.
-      </p>
-
+      <p class="text-slate-400 mt-5">No reports found.</p>
     `;
-
-
     return;
   }
 
+  const previews = await getLatestCasePreviews(data);
+  const reporterProfiles = await getConversationProfiles((data || []).map(report => report.reporter_id));
 
   $("adminContent").innerHTML += `
 
@@ -3710,12 +3722,15 @@ async function loadAdminReports() {
           </div>
 
 
+          <div class="text-xs text-slate-300 mt-2">Reporter Registration Number: <b>${escapeHTML(reporterProfiles.get(String(report.reporter_id || ""))?.registration_number || "Unavailable")}</b></div>
+
           <div class="font-semibold mt-2">
-            ${escapeHTML(
-              report.subject
-            )}
+            ${escapeHTML(report.subject)}
           </div>
 
+          <div class="text-sm text-slate-300 mt-2 line-clamp-2 break-words">
+            ${escapeHTML(previews.get(String(report.id)) || "No message text yet.")}
+          </div>
 
           <div class="text-xs text-slate-500 mt-1">
             Created ${fmtDate(
@@ -3785,134 +3800,82 @@ async function loadAdminReports() {
 ============================================================ */
 
 async function adminOpenCase(id) {
-
   selectedReportId = id;
-
-  const {
-    data: report,
-    error: reportError
-  } = await sb
-    .from("reports")
-    .select(
-      "id,subject,status"
-    )
-    .eq(
-      "id",
-      id
-    )
-    .single();
-
-
-  if (
-    reportError ||
-    !report
-  ) {
-
-    console.error(
-      reportError
-    );
-
-
-    toast(
-      "Could not open case.",
-      "error"
-    );
-
-
+  const {data: report, error: reportError} = await sb.from("reports")
+    .select("id,subject,status,initial_body,created_at,reporter_id")
+    .eq("id", id).single();
+  if (reportError || !report) {
+    console.error(reportError);
+    toast("Could not open case.", "error");
     return;
   }
 
-
   const [{data: messages, error: messageError}, attachments] = await Promise.all([
-    sb.from("report_messages").select("id,sender_role,body,created_at")
+    sb.from("report_messages").select("id,sender_id,sender_role,body,created_at")
       .eq("report_id", id).order("created_at", {ascending:true}),
     getCaseAttachments(id)
   ]);
-
-
   if (messageError) {
-
-    toast(
-      messageError.message,
-      "error"
-    );
-
-
+    toast(messageError.message, "error");
     return;
   }
 
+  const timeline = [
+    ...(report.initial_body ? [{id:`report-${report.id}`, body:report.initial_body,
+      sender_role:"user", sender_id:report.reporter_id, reporter_id:report.reporter_id,
+      created_at:report.created_at, itemType:"message",
+      isOriginalReport:true, sortDate:report.created_at}] : []),
+    ...(messages || []).map(m => ({...m, itemType:"message", sortDate:m.created_at})),
+    ...attachments.map(a => ({...a, itemType:"attachment", sortDate:a.created_at}))
+  ].sort((a,b) => new Date(a.sortDate || 0) - new Date(b.sortDate || 0));
+  const profiles = await getConversationProfiles([
+    report.reporter_id, currentUser?.id, ...timeline.map(item => item.sender_id)
+  ]);
+  const reporterProfile = profiles.get(String(report.reporter_id || ""));
 
   $("adminContent").innerHTML = `
-
-    <button
-      onclick="loadAdminReports()"
-      class="text-accent text-sm">
-      ← Back
-    </button>
-
-
-    <h3 class="text-2xl font-black mt-3">
-      Case #${escapeHTML(report.id)}
-    </h3>
-
-
-    <p class="text-slate-400">
-      ${escapeHTML(report.subject)}
-      •
-      ${escapeHTML(
-        report.status ||
-        "submitted"
-      )}
-    </p>
-
-
-    <div class="mt-5 space-y-3
-      max-h-[45vh]
-      overflow-y-auto">
-
-      ${[
-        ...(messages || []).map(m => ({...m, itemType:"message", sortDate:m.created_at})),
-        ...attachments.map(a => ({...a, itemType:"attachment", sortDate:a.created_at}))
-      ].sort((a,b) => new Date(a.sortDate || 0) - new Date(b.sortDate || 0)).map(item => `
-        <div class="bg-black/20 rounded-2xl p-4">
-          <div class="text-xs text-slate-500">
-            ${item.itemType === "attachment" ? "Case attachment" : (item.sender_role === "user" ? "User" : "Admin")}
-            • ${fmtDate(item.created_at)}
-          </div>
-          ${item.itemType === "attachment" ? attachmentCard(item) : `<div class="whitespace-pre-wrap break-words mt-2">${escapeHTML(item.body || "")}</div>`}
-        </div>
-      `).join("")}
-
+    <button onclick="loadAdminReports()" class="text-accent text-sm">← Back to reports</button>
+    <h3 class="text-2xl font-black mt-3">Case #${escapeHTML(report.id)}</h3>
+    <p class="text-slate-300 mt-1">Reporter Registration Number: <b>${escapeHTML(reporterProfile?.registration_number || "Unavailable")}</b></p>
+    <p class="text-slate-400">${escapeHTML(report.subject)} · ${escapeHTML(report.status || "submitted")}</p>
+    <div class="mt-5 rounded-2xl border border-line bg-black/15 p-3 sm:p-5">
+      <div class="text-xs uppercase tracking-widest text-slate-400 mb-4">Private case conversation</div>
+      <div id="adminCaseMessages" class="space-y-3 max-h-[55vh] overflow-y-auto pr-1">
+        ${timeline.length ? timeline.map(item => {
+          const isAttachment = item.itemType === "attachment";
+          const isMine = isAttachment
+            ? String(item.storage_path || "").startsWith(`${currentUser.id}/`)
+            : item.sender_role === "admin";
+          const senderProfile = profiles.get(String(item.sender_id || ""));
+          const who = isAttachment
+            ? (isMine ? `${currentProfile?.full_name || "Admin"} · Attachment` : `Reporter · Reg. No: ${reporterProfile?.registration_number || "Unavailable"} · Attachment`)
+            : (item.isOriginalReport
+                ? `Reporter · Reg. No: ${reporterProfile?.registration_number || "Unavailable"} · Original report`
+                : (item.sender_role === "admin"
+                    ? (senderProfile?.full_name || currentProfile?.full_name || "Authorized Admin")
+                    : `Reporter · Reg. No: ${senderProfile?.registration_number || reporterProfile?.registration_number || "Unavailable"}`));
+          return `<div class="flex ${isMine ? "justify-end" : "justify-start"}">
+            <div class="w-fit max-w-[95%] sm:max-w-[82%] rounded-2xl px-4 py-3 ${isMine ? "bg-emerald-900/45 border border-emerald-700/40 rounded-br-md" : "bg-slate-800/90 border border-slate-600/40 rounded-bl-md"}">
+              <div class="text-xs ${isMine ? "text-emerald-200" : "text-amber-200"} mb-1 font-semibold">${escapeHTML(who)}</div>
+              ${isAttachment ? attachmentCard(item) : `<div class="whitespace-pre-wrap break-words text-sm leading-6">${escapeHTML(item.body || "")}</div>`}
+              <div class="text-[10px] text-slate-400 mt-2 text-right">${escapeHTML(fmtDate(item.created_at))}</div>
+            </div>
+          </div>`;
+        }).join("") : `<div class="text-center text-slate-500 py-8">No messages in this case yet.</div>`}
+      </div>
     </div>
-
-
-    <form
-      onsubmit="adminReply(event,'${id}')"
-      class="mt-5 flex flex-wrap gap-2">
-
-      <input
-        id="adminReplyText"
-        maxlength="5000"
-        class="flex-1 min-w-[180px] bg-black/20 border border-line rounded-xl px-4 py-3"
-        placeholder="Reply privately to this user...">
-
-      <label class="px-4 py-3 border border-line rounded-xl cursor-pointer" title="Attach a file">
-        📎 Attach
-        <input id="adminReplyFile" type="file" class="hidden"
-          accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt,.rtf,.odt,.xls,.xlsx,.csv,.ppt,.pptx,.zip,.7z,.rar,.m4a,.aac,.mp3,.wav,.ogg,.webm,.mp4,.mov,.mkv,.avi,.heic,.heif">
+    <form onsubmit="adminReply(event,'${id}')" class="mt-4 flex flex-wrap gap-2">
+      <input id="adminReplyText" maxlength="5000" class="flex-1 min-w-[180px] bg-black/20 border border-line rounded-xl px-4 py-3" placeholder="Write a private reply...">
+      <label class="px-4 py-3 border border-line rounded-xl cursor-pointer" title="Attach a file">📎 Attach
+        <input id="adminReplyFile" type="file" class="hidden" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt,.rtf,.odt,.xls,.xlsx,.csv,.ppt,.pptx,.zip,.7z,.rar,.m4a,.aac,.mp3,.wav,.ogg,.webm,.mp4,.mov,.mkv,.avi,.heic,.heif">
       </label>
-
-      <button
-        class="px-5 py-3 rounded-xl bg-accent text-ink font-bold">
-        Send Reply
-      </button>
+      <button class="px-5 py-3 rounded-xl bg-accent text-ink font-bold">Send Reply</button>
     </form>
-    <p class="text-xs text-slate-500 mt-2">Private attachments: up to 50 MB each. Use HTTPS to record voice/video.</p>
-
+    <p class="text-xs text-slate-500 mt-2">Private case conversation. Attachments are visible only to authorized participants.</p>
   `;
-
+  const chat = $("adminCaseMessages");
+  if (chat) chat.scrollTop = chat.scrollHeight;
 }
-
 
 /* ============================================================
    ADMIN REPLY
